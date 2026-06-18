@@ -426,15 +426,8 @@
 
     if (data.cpf !== null) {
       var validation = validateCpf(data.cpf);
-      if (!validation.valid) {
-        cpfInput.classList.add('invalid');
-        cpfError.hidden = false;
-      } else {
-        if (formState.cpf.source !== 'manual') {
-          fillField('field-cpf', validation.formatted, 'cpf');
-        }
-        cpfInput.classList.remove('invalid');
-        cpfError.hidden = true;
+      if (validation.valid && formState.cpf.source !== 'manual') {
+        fillField('field-cpf', validation.formatted, 'cpf');
       }
     }
 
