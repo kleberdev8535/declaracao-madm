@@ -531,11 +531,8 @@
       (profissao || '_______________') + ', ' +
       'devidamente inscrito(a) no CPF sob o N°: ' + (cpf || '___.___.___-__') + ', ' +
       'portador(a) da cédula de identidade N° ' + (rg || '__________') + ', ' +
-      'DECLARO para os devidos fins, sob as penas do Art. 299 do Código Penal ' +
-      '(Omitir, em documento público ou particular, declaração que dele devia constar, ' +
-      'ou nele inserir ou fazer inserir declaração falsa ou diversa da que devia ser escrita, ' +
-      'com o fim de prejudicar direito, criar obrigação ou alterar a verdade sobre fato ' +
-      'juridicamente relevante), ser residente e domiciliado(a) na ' + enderecoDecl + '.\n' +
+      'DECLARO para os devidos fins, segundo o Art. 299 do Código Penal, ' +
+      'ser residente e domiciliado(a) na ' + enderecoDecl + '.\n' +
       '\n' +
       localData +
       '\n\n\n\n\n\n' +
@@ -570,6 +567,17 @@
       var text = document.getElementById('declaration-text').value;
       if (!text) return;
 
+      var art299 =
+        'Art. 299 do Código Penal – Omitir, em documento público ou particular, ' +
+        'declaração que dele devia constar, ou nele inserir ou fazer inserir declaração ' +
+        'falsa ou diversa da que devia ser escrita, com o fim de prejudicar direito, ' +
+        'criar obrigação ou alterar a verdade sobre fato juridicamente relevante.';
+
+      var pdfText = text.replace(
+        'segundo o Art. 299 do Código Penal,',
+        'sob as penas do Art. 299 do Código Penal (' + art299 + '),'
+      );
+
       try {
         var jsPDF = window.jspdf && window.jspdf.jsPDF;
         if (!jsPDF) {
@@ -584,7 +592,7 @@
         var lineH    = 7;
         var y        = margin;
 
-        var lines = doc.splitTextToSize(text, maxWidth);
+        var lines = doc.splitTextToSize(pdfText, maxWidth);
         lines.forEach(function (line) {
           if (y + lineH > doc.internal.pageSize.getHeight() - margin) {
             doc.addPage();
