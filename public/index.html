@@ -411,7 +411,7 @@ async function carregarDocumentos() {
   document.getElementById('docs-tbody').innerHTML =
     '<tr class="table-empty" id="table-loading"><td colspan="5"><div class="table-loading-state"><div class="spinner-sm"></div><p>Carregando documentos...</p></div></td></tr>';
   try {
-    var r    = await fetch('/api/docs');
+    var r    = await fetch('https://declaracao-madm.onrender.com/api/docs');
     var docs = await r.json();
     _todosDocumentos = docs;
     atualizarMetricas(docs);
@@ -489,18 +489,18 @@ function escaparHtml(str) {
 }
 
 function baixarPdf(token) {
-  window.open('/api/doc/' + token + '/pdf', '_blank');
+  window.open('https://declaracao-madm.onrender.com/api/doc/' + token + '/pdf', '_blank');
 }
 
 function copiarLink(token) {
-  navigator.clipboard.writeText(location.origin + '/assinar/' + token).then(function() {
+  navigator.clipboard.writeText('https://declaracao-madm.onrender.com/assinar/' + token).then(function() {
     mostrarToast('Link copiado!');
   });
 }
 
 async function apagarTodosDocumentos() {
   if (!confirm('Apagar TODOS os documentos? Esta ação não pode ser desfeita.')) return;
-  await fetch('/api/docs', { method: 'DELETE' });
+  await fetch('https://declaracao-madm.onrender.com/api/docs', { method: 'DELETE' });
   carregarDocumentos();
 }
 

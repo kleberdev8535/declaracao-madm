@@ -627,7 +627,7 @@
       btnEnviar.innerHTML = 'Gerando link...';
 
       try {
-        var response = await fetch('/api/assinar', {
+        var response = await fetch('https://declaracao-madm.onrender.com/api/assinar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ texto: texto, nome: nome, cpf: cpf }),
@@ -647,7 +647,7 @@
         // Inicia polling para verificar quando o cliente assinar
         var poll = setInterval(async function () {
           try {
-            var r = await fetch('/api/doc/' + data.token);
+            var r = await fetch('https://declaracao-madm.onrender.com/api/doc/' + data.token);
             var doc = await r.json();
             if (doc.status === 'assinado') {
               clearInterval(poll);
@@ -656,7 +656,7 @@
               document.getElementById('link-status').innerHTML =
                 '<span style="color:var(--green);font-weight:700">✓ Assinado em ' + assinadoEm + '</span>'
                 + ' &nbsp;—&nbsp; '
-                + '<a href="/api/doc/' + data.token + '/pdf" target="_blank">⬇️ Baixar PDF assinado</a>';
+                + '<a href="https://declaracao-madm.onrender.com/api/doc/' + data.token + '/pdf" target="_blank">⬇️ Baixar PDF assinado</a>';
             }
           } catch (e) { /* silencioso */ }
         }, 5000);

@@ -521,7 +521,7 @@
   }
 
   /* ══════════════════ CARREGA DOC ══════════════════ */
-  fetch('/api/doc/' + token)
+  fetch('https://declaracao-madm.onrender.com/api/doc/' + token)
     .then(function(r) { if (!r.ok) throw 0; return r.json(); })
     .then(function(doc) {
       if (doc.status === 'assinado') {
@@ -686,7 +686,7 @@
 
       var assinaturaImg = canvas.toDataURL('image/png');
 
-      fetch('/api/doc/' + token + '/concluir', {
+      fetch('https://declaracao-madm.onrender.com/api/doc/' + token + '/concluir', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
