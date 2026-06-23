@@ -157,7 +157,8 @@
   }
 
   function showStatusArea() {
-    document.getElementById('status-area').hidden = false;
+    var el = document.getElementById('card-status');
+    if (el) el.hidden = false;
   }
 
   /**
@@ -524,13 +525,10 @@
       (profissao || '_______________') + ', ' +
       'devidamente inscrito(a) no CPF sob o N°: ' + (cpf || '___.___.___-__') + ', ' +
       'portador(a) da cédula de identidade N° ' + (rg || '__________') + ', ' +
-      'DECLARO para os devidos fins, segundo o Art. 299 do Código Penal, ' +
+      'DECLARO para os devidos fins, segundo o Art. 299 do Código Penal – Omitir, em documento público ou particular, declaração que dele devia constar, ou nele inserir ou fazer inserir declaração falsa ou diversa da que devia ser escrita, com o fim de prejudicar direito, criar obrigação ou alterar a verdade sobre fato juridicamente relevante, ' +
       'ser residente e domiciliado(a) na ' + enderecoDecl + '.\n' +
       '\n' +
-      localData +
-      '\n\n\n\n\n\n' +
-      '________________________________________________\n' +
-      '           Assinatura do Cliente';
+      localData;
 
     document.getElementById('declaration-text').value = text;
     document.getElementById('declaration-area').hidden = false;
@@ -604,6 +602,89 @@
   }
 
   /* =========================================================
+   * 5b. ENVIAR PARA ASSINATURA
+   * ========================================================= */
+
+  function initEnviarAssinatura() {
+    var btnEnviar = document.getElementById('btn-enviar-assinatura');
+    if (!btnEnviar) return;
+
+    btnEnviar.addEventListener('click', async function () {
+      var texto = document.getElementById('declaration-text').value;
+      var nome  = getFieldValue('field-nome');
+      var cpf   = getFieldValue('field-cpf');
+
+      if (!texto) {
+        alert('Gere a declaração antes de enviar para assinatura.');
+        return;
+      }
+      if (!nome) {
+        alert('O campo Nome é obrigatório para gerar o link de assinatura.');
+        return;
+      }
+
+      btnEnviar.disabled = true;
+      btnEnviar.innerHTML = 'Gerando link...';
+
+      try {
+        var response = await fetch('/api/assinar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto: texto, nome: nome, cpf: cpf }),
+        });
+
+        if (!response.ok) throw new Error('Erro ao criar link');
+
+        var data = await response.json();
+
+        // Exibe o link
+        document.getElementById('link-assinatura').value = data.link;
+        document.getElementById('link-area').hidden = false;
+        document.getElementById('link-area').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('link-polling').hidden = false;
+        document.getElementById('link-status').textContent = '';
+
+        // Inicia polling para verificar quando o cliente assinar
+        var poll = setInterval(async function () {
+          try {
+            var r = await fetch('/api/doc/' + data.token);
+            var doc = await r.json();
+            if (doc.status === 'assinado') {
+              clearInterval(poll);
+              document.getElementById('link-polling').hidden = true;
+              var assinadoEm = new Date(doc.assinadoEm).toLocaleString('pt-BR');
+              document.getElementById('link-status').innerHTML =
+                '<span style="color:var(--green);font-weight:700">✓ Assinado em ' + assinadoEm + '</span>'
+                + ' &nbsp;—&nbsp; '
+                + '<a href="/api/doc/' + data.token + '/pdf" target="_blank">⬇️ Baixar PDF assinado</a>';
+            }
+          } catch (e) { /* silencioso */ }
+        }, 5000);
+
+      } catch (err) {
+        alert('Erro ao gerar link de assinatura. Verifique se o servidor está rodando.');
+        console.error(err);
+      } finally {
+        btnEnviar.disabled = false;
+        btnEnviar.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Enviar para Assinatura';
+      }
+    });
+
+    // Copiar link
+    var btnCopyLink = document.getElementById('btn-copy-link');
+    if (btnCopyLink) {
+      btnCopyLink.addEventListener('click', function () {
+        var link = document.getElementById('link-assinatura').value;
+        if (!link) return;
+        navigator.clipboard.writeText(link).then(function () {
+          btnCopyLink.textContent = 'Copiado!';
+          setTimeout(function () { btnCopyLink.textContent = 'Copiar'; }, 2000);
+        });
+      });
+    }
+  }
+
+  /* =========================================================
    * 6. TOGGLE TEXTO BRUTO
    * ========================================================= */
 
@@ -627,6 +708,7 @@
     initUploader();
     initManualEditDetection();
     initDeclarationGenerator();
+    initEnviarAssinatura();
     initToggleRaw();
   }
 

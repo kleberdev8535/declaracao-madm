@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id            String     @id @default(uuid())
+  nome          String
+  cpf           String     @unique
+  rg            String?
+  estadoCivil   String?
+  nacionalidade String?
+  profissao     String?
+  dataNascimento DateTime?
+  telefone      String?
+  email         String?
+  rua           String?
+  numero        String?
+  complemento   String?
+  bairro        String?
+  cep           String?
+  cidade        String?
+  uf            String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  documents     Document[]
+
+  @@map("clients")
+}
+
+model Template {
+  id          String    @id @default(uuid())
+  nome        String
+  descricao   String?
+  categoria   String    @default("OUTRO")
+  conteudo    String
+  variaveis   String    @default("[]")
+  ativo       Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  documents   Document[]
+
+  @@map("templates")
+}
+
+model Document {
+  id               String      @id @default(uuid())
+  titulo           String
+  conteudo         String
+  conteudoAssinado String?
+  status           String      @default("CRIADO")
+  token            String      @unique @default(uuid())
+  linkAssinatura   String?
+  expiresAt        DateTime?
+  signedAt         DateTime?
+  pdfPath          String?
+  pdfAssinadoPath  String?
+  hashDocumento    String?
+  hashAssinatura   String?
+  protocolo        String?     @unique
+  qrCodePath       String?
+  responsavel      String?
+  advogado         String?
+  unidade          String?
+  clienteId        String
+  cliente          Client      @relation(fields: [clienteId], references: [id])
+  templateId       String?
+  template         Template?   @relation(fields: [templateId], references: [id])
+  assinatura       Signature?
+  eventos          AuditEvent[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@map("documents")
+}
+
+model Signature {
+  id           String   @id @default(uuid())
+  documentId   String   @unique
+  document     Document @relation(fields: [documentId], references: [id])
+  imagemBase64 String
+  ip           String
+  userAgent    String?
+  dispositivo  String?
+  navegador    String?
+  sistemaOp    String?
+  timezone     String?
+  latitude     Float?
+  longitude    Float?
+  hash         String
+  createdAt    DateTime @default(now())
+
+  @@map("signatures")
+}
+
+model AuditEvent {
+  id          String   @id @default(uuid())
+  documentId  String
+  document    Document @relation(fields: [documentId], references: [id])
+  status      String
+  ip          String?
+  userAgent   String?
+  dispositivo String?
+  navegador   String?
+  sistemaOp   String?
+  timezone    String?
+  descricao   String?
+  metadata    String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_events")
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  titulo     String
+  mensagem   String
+  tipo       String
+  lida       Boolean  @default(false)
+  documentId String?
+  createdAt  DateTime @default(now())
+
+  @@map("notifications")
+}

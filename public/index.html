@@ -3,12 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Leitor de Documentos OCR</title>
+  <title>MADM Declarações</title>
 
-  <!-- Tesseract.js -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-  <!-- pdf.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>
     if (typeof pdfjsLib !== 'undefined') {
@@ -16,172 +13,553 @@
         'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
   </script>
-
-  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main>
-    <header class="site-header">
-      <h1>⚡ OCR Document Reader</h1>
-      <p>Envie um print ou foto da minuta — os dados são extraídos automaticamente.</p>
-    </header>
 
-    <hr class="divider">
+<!-- ═══════════════════════════════════════════════════════ SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">M</div>
+    <div class="logo-text">
+      <span class="logo-name">MADM</span>
+      <span class="logo-sub">Declarações</span>
+    </div>
+  </div>
 
-    <!-- Seção 1: Upload -->
-    <section aria-labelledby="upload-title">
-      <h2 id="upload-title">1. Enviar Documento</h2>
+  <nav class="sidebar-nav">
+    <p class="nav-section-label">Principal</p>
 
-      <div
-        id="drop-zone"
-        role="region"
-        aria-label="Área de arrastar e soltar arquivo"
-        tabindex="0"
-      >
-        <p>Arraste uma imagem ou PDF aqui</p>
-        <span aria-hidden="true">ou</span>
-        <button type="button" id="btn-select-file">Selecionar arquivo</button>
-        <input
-          type="file"
-          id="file-input"
-          accept=".png,.jpg,.jpeg,.pdf"
-          aria-label="Selecionar arquivo de imagem ou PDF"
-          hidden
-        />
+    <a href="#" class="nav-item active" data-page="ocr" onclick="trocarPagina('ocr');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      <span>Gerar Declaração</span>
+    </a>
+
+    <a href="#" class="nav-item" data-page="docs" onclick="trocarPagina('docs');return false;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span>Assinaturas</span>
+      <span class="nav-badge" id="badge-pendentes" hidden>0</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">L</div>
+      <div class="user-info">
+        <p class="user-name">MADM Consultoria</p>
+        <p class="user-role">Administrador</p>
       </div>
+    </div>
+  </div>
+</aside>
 
-      <p id="file-name" aria-live="polite"></p>
+<!-- ═══════════════════════════════════════════════════════ MAIN -->
+<div class="main-wrapper">
 
-      <figure id="file-preview" hidden aria-label="Pré-visualização do arquivo selecionado">
-        <img id="preview-img" src="" alt="Pré-visualização do documento enviado" />
-      </figure>
-    </section>
+  <!-- Top Bar -->
+  <header class="topbar">
+    <button class="topbar-menu-btn" id="btn-sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
 
-    <!-- Seção 2: Progresso -->
-    <section id="status-area" aria-labelledby="status-title" hidden>
-      <h2 id="status-title">2. Processamento</h2>
+    <div class="topbar-title" id="topbar-title">Gerar Declaração</div>
 
-      <p id="status-text" role="status" aria-live="polite"></p>
+    <div class="topbar-actions">
+      <div class="topbar-search" id="topbar-search-wrap" hidden>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-docs" placeholder="Buscar por nome ou CPF..." />
+      </div>
+      <button class="btn-refresh" id="btn-refresh-docs" hidden onclick="carregarDocumentos()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+    </div>
+  </header>
 
+  <!-- ─── PÁGINA OCR ─── -->
+  <main class="page active" id="page-ocr">
+    <div class="page-header">
       <div>
-        <button type="button" id="toggle-raw" aria-expanded="false" aria-controls="raw-text-area">
-          Ver texto bruto extraído
-        </button>
+        <h1 class="page-title">Gerar Declaração</h1>
+        <p class="page-subtitle">Envie um print ou foto da minuta — os dados são extraídos automaticamente</p>
+      </div>
+    </div>
+
+    <div class="content-grid">
+
+      <!-- Card Upload -->
+      <div class="card" id="card-upload">
+        <div class="card-header">
+          <span class="card-step">01</span>
+          <h2 class="card-title">Enviar Documento</h2>
+        </div>
+        <div class="card-body">
+          <div class="drop-zone" id="drop-zone" tabindex="0" role="region" aria-label="Área de upload">
+            <div class="drop-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <p class="drop-label">Arraste uma imagem ou PDF aqui</p>
+            <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
+            <button type="button" class="btn btn-outline" id="btn-select-file">Selecionar arquivo</button>
+            <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.pdf" hidden />
+          </div>
+          <p class="file-name" id="file-name"></p>
+          <figure class="file-preview" id="file-preview" hidden>
+            <img id="preview-img" src="" alt="Pré-visualização" />
+          </figure>
+        </div>
       </div>
 
-      <div id="raw-text-area" hidden>
-        <label for="raw-text">Texto bruto extraído pelo OCR:</label>
-        <textarea
-          id="raw-text"
-          readonly
-          rows="8"
-          aria-label="Texto bruto extraído pelo OCR"
-        ></textarea>
+      <!-- Card Processamento -->
+      <div class="card" id="card-status" hidden>
+        <div class="card-header">
+          <span class="card-step">02</span>
+          <h2 class="card-title">Processamento OCR</h2>
+        </div>
+        <div class="card-body">
+          <div class="ocr-status">
+            <div class="ocr-spinner" id="ocr-spinner"></div>
+            <p class="ocr-status-text" id="status-text" role="status" aria-live="polite">Processando...</p>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm" id="toggle-raw" aria-expanded="false" aria-controls="raw-text-area">
+            Ver texto bruto extraído
+          </button>
+          <div id="raw-text-area" hidden>
+            <textarea id="raw-text" readonly rows="6" class="textarea-raw" aria-label="Texto bruto extraído pelo OCR"></textarea>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <!-- Seção 3: Formulário -->
-    <hr class="divider">
-    <section aria-labelledby="form-title">
-      <h2 id="form-title">Dados Identificados</h2>
-
-      <form id="declaration-form" novalidate>
-        <div class="field-group">
-          <label for="field-nome">Nome completo</label>
-          <input type="text" id="field-nome" name="nome" autocomplete="name" placeholder="Nome completo do titular" />
+      <!-- Card Formulário -->
+      <div class="card card-wide">
+        <div class="card-header">
+          <span class="card-step">03</span>
+          <h2 class="card-title">Dados Identificados</h2>
         </div>
+        <div class="card-body">
+          <form id="declaration-form" novalidate>
 
-        <div class="fields-row">
-          <div class="field-group">
-            <label for="field-nacionalidade">Nacionalidade</label>
-            <input type="text" id="field-nacionalidade" name="nacionalidade" placeholder="Ex: brasileiro(a)" />
-          </div>
-          <div class="field-group">
-            <label for="field-estado-civil">Estado Civil</label>
-            <input type="text" id="field-estado-civil" name="estadoCivil" placeholder="Ex: solteiro(a)" />
-          </div>
-          <div class="field-group">
-            <label for="field-profissao">Profissão</label>
-            <input type="text" id="field-profissao" name="profissao" placeholder="Ex: vendedor" />
-          </div>
+            <!-- Nome — linha inteira -->
+            <div class="form-group" style="flex:unset">
+              <label class="form-label" for="field-nome">Nome completo</label>
+              <input class="form-input" type="text" id="field-nome" name="nome" placeholder="Nome completo do titular" />
+            </div>
+
+            <!-- Nacionalidade | Estado Civil | Profissão -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="field-nacionalidade">Nacionalidade</label>
+                <input class="form-input" type="text" id="field-nacionalidade" name="nacionalidade" placeholder="Ex: brasileiro(a)" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="field-estado-civil">Estado Civil</label>
+                <input class="form-input" type="text" id="field-estado-civil" name="estadoCivil" placeholder="Ex: solteiro(a)" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="field-profissao">Profissão</label>
+                <input class="form-input" type="text" id="field-profissao" name="profissao" placeholder="Ex: vendedor" />
+              </div>
+            </div>
+
+            <!-- RG | CPF -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="field-rg">RG</label>
+                <input class="form-input" type="text" id="field-rg" name="rg" placeholder="Número do RG" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="field-cpf">CPF</label>
+                <input class="form-input" type="text" id="field-cpf" name="cpf" placeholder="000.000.000-00" aria-describedby="cpf-error" />
+                <span id="cpf-error" class="form-error" role="alert" aria-live="assertive" hidden>CPF inválido.</span>
+              </div>
+              <!-- coluna vazia para ocupar a 3ª posição igual ao layout -->
+              <div class="form-group" style="visibility:hidden;pointer-events:none"></div>
+            </div>
+
+            <!-- Rua (larga) | Número (curto) -->
+            <div class="form-row">
+              <div class="form-group form-group--wide">
+                <label class="form-label" for="field-rua">Rua</label>
+                <input class="form-input" type="text" id="field-rua" name="rua" placeholder="Nome da rua" />
+              </div>
+              <div class="form-group form-group--short">
+                <label class="form-label" for="field-numero">Número</label>
+                <input class="form-input" type="text" id="field-numero" name="numero" placeholder="S/N" />
+              </div>
+            </div>
+
+            <!-- Complemento | Bairro -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="field-complemento">Complemento</label>
+                <input class="form-input" type="text" id="field-complemento" name="complemento" placeholder="Ex: Q B L 16" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="field-bairro">Bairro</label>
+                <input class="form-input" type="text" id="field-bairro" name="bairro" placeholder="Bairro" />
+              </div>
+            </div>
+
+            <!-- CEP | Cidade (larga) | UF (curto) -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="field-cep">CEP</label>
+                <input class="form-input" type="text" id="field-cep" name="cep" placeholder="00000-000" />
+              </div>
+              <div class="form-group form-group--wide">
+                <label class="form-label" for="field-cidade">Cidade</label>
+                <input class="form-input" type="text" id="field-cidade" name="cidade" placeholder="Cidade" />
+              </div>
+              <div class="form-group form-group--short">
+                <label class="form-label" for="field-uf">UF</label>
+                <input class="form-input" type="text" id="field-uf" name="uf" placeholder="MS" maxlength="2" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary btn-lg" id="btn-gerar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Gerar Declaração
+              </button>
+            </div>
+          </form>
         </div>
-
-        <div class="fields-row">
-          <div class="field-group">
-            <label for="field-rg">RG</label>
-            <input type="text" id="field-rg" name="rg" autocomplete="off" placeholder="Número do RG" />
-          </div>
-          <div class="field-group">
-            <label for="field-cpf">CPF</label>
-            <input type="text" id="field-cpf" name="cpf" autocomplete="off" placeholder="000.000.000-00" aria-describedby="cpf-error" />
-            <span id="cpf-error" role="alert" aria-live="assertive" hidden>CPF inválido. Verifique o número.</span>
-          </div>
-        </div>
-
-        <div class="fields-row">
-          <div class="field-group" style="flex:2">
-            <label for="field-rua">Rua</label>
-            <input type="text" id="field-rua" name="rua" placeholder="Nome da rua" />
-          </div>
-          <div class="field-group">
-            <label for="field-numero">Número</label>
-            <input type="text" id="field-numero" name="numero" placeholder="S/N" />
-          </div>
-        </div>
-
-        <div class="fields-row">
-          <div class="field-group">
-            <label for="field-complemento">Complemento</label>
-            <input type="text" id="field-complemento" name="complemento" placeholder="Ex: Q B L 16" />
-          </div>
-          <div class="field-group">
-            <label for="field-bairro">Bairro</label>
-            <input type="text" id="field-bairro" name="bairro" placeholder="Bairro" />
-          </div>
-        </div>
-
-        <div class="fields-row">
-          <div class="field-group">
-            <label for="field-cep">CEP</label>
-            <input type="text" id="field-cep" name="cep" autocomplete="postal-code" placeholder="00000-000" />
-          </div>
-          <div class="field-group" style="flex:2">
-            <label for="field-cidade">Cidade</label>
-            <input type="text" id="field-cidade" name="cidade" placeholder="Cidade" />
-          </div>
-          <div class="field-group">
-            <label for="field-uf">UF</label>
-            <input type="text" id="field-uf" name="uf" placeholder="MS" maxlength="2" />
-          </div>
-        </div>
-
-        <button type="button" id="btn-gerar">Gerar Declaração</button>
-      </form>
-    </section>
-
-    <!-- Seção 4: Declaração -->
-    <hr class="divider">
-    <section id="declaration-area" aria-labelledby="declaration-title" hidden>
-      <h2 id="declaration-title">4. Declaração Gerada</h2>
-
-      <label for="declaration-text">Texto da declaração:</label>
-      <textarea
-        id="declaration-text"
-        readonly
-        rows="12"
-        aria-label="Texto da declaração gerada"
-      ></textarea>
-
-      <div class="declaration-actions">
-        <button type="button" id="btn-copy">Copiar texto</button>
-        <button type="button" id="btn-download-pdf">Baixar PDF</button>
       </div>
-    </section>
+
+      <!-- Card Declaração Gerada -->
+      <div class="card card-wide" id="declaration-area" hidden>
+        <div class="card-header">
+          <span class="card-step">04</span>
+          <h2 class="card-title">Declaração Gerada</h2>
+        </div>
+        <div class="card-body">
+          <textarea id="declaration-text" readonly rows="12" class="textarea-declaration" aria-label="Texto da declaração gerada"></textarea>
+
+          <div class="declaration-actions">
+            <button type="button" class="btn btn-ghost" id="btn-copy">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar texto
+            </button>
+            <button type="button" class="btn btn-outline" id="btn-download-pdf">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Baixar PDF
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-enviar-assinatura">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Enviar para Assinatura
+            </button>
+          </div>
+
+          <!-- Área do link -->
+          <div class="link-area" id="link-area" hidden>
+            <div class="link-area-header">
+              <div class="link-status-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div>
+                <p class="link-area-title">Link de assinatura gerado</p>
+                <p class="link-area-sub">Envie para o cliente via WhatsApp ou e-mail</p>
+              </div>
+            </div>
+            <div class="link-input-row">
+              <input type="text" id="link-assinatura" readonly class="link-input" />
+              <button type="button" class="btn btn-outline btn-sm" id="btn-copy-link">Copiar</button>
+            </div>
+            <div class="link-polling" id="link-polling">
+              <div class="polling-dot"></div>
+              <p>Aguardando assinatura do cliente...</p>
+            </div>
+            <div id="link-status"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-grid -->
   </main>
 
-  <script src="app.js"></script>
+  <!-- ─── PÁGINA ASSINATURAS ─── -->
+  <main class="page" id="page-docs">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Assinaturas</h1>
+        <p class="page-subtitle">Acompanhe todos os documentos enviados para assinatura</p>
+      </div>
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-danger" onclick="apagarTodosDocumentos()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Apagar tudo
+        </button>
+        <button class="btn btn-primary" onclick="trocarPagina('ocr')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova declaração
+        </button>
+      </div>
+    </div>
+
+    <!-- Métricas -->
+    <div class="metrics-row" id="metrics-row">
+      <div class="metric-card">
+        <p class="metric-label">Total</p>
+        <p class="metric-value" id="metric-total">—</p>
+      </div>
+      <div class="metric-card metric-card--green">
+        <p class="metric-label">Assinados</p>
+        <p class="metric-value" id="metric-assinados">—</p>
+      </div>
+      <div class="metric-card metric-card--yellow">
+        <p class="metric-label">Pendentes</p>
+        <p class="metric-value" id="metric-pendentes">—</p>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="table-card">
+      <div class="table-toolbar">
+        <p class="table-count" id="table-count">—</p>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="todos" onclick="filtrarDocs(this,'todos')">Todos</button>
+            <button class="filter-tab" data-filter="pendente" onclick="filtrarDocs(this,'pendente')">Pendentes</button>
+            <button class="filter-tab" data-filter="assinado" onclick="filtrarDocs(this,'assinado')">Assinados</button>
+          </div>
+          <button class="btn-refresh-inline" id="btn-refresh-inline" onclick="carregarDocumentos()" title="Atualizar">
+            <svg id="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span id="refresh-label">Atualizar</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="docs-table" id="docs-table">
+          <thead>
+            <tr>
+              <th>Signatário</th>
+              <th>CPF</th>
+              <th>Criado em</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="docs-tbody">
+            <tr class="table-empty" id="table-loading">
+              <td colspan="5">
+                <div class="table-loading-state">
+                  <div class="spinner-sm"></div>
+                  <p>Carregando documentos...</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+</div><!-- /main-wrapper -->
+
+<!-- Modal detalhe do documento -->
+<div class="modal-overlay" id="modal-overlay" hidden onclick="fecharModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Detalhes do Documento</h3>
+      <button class="modal-close" onclick="fecharModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// ── Navegação entre páginas ──────────────────────────────────
+var _todosDocumentos = [];
+var _filtroAtual = 'todos';
+
+function trocarPagina(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector('[data-page="' + id + '"]').classList.add('active');
+
+  var titulos = { ocr: 'Gerar Declaração', docs: 'Assinaturas' };
+  document.getElementById('topbar-title').textContent = titulos[id] || '';
+
+  var isDocsPage = id === 'docs';
+  document.getElementById('topbar-search-wrap').hidden = !isDocsPage;
+  document.getElementById('btn-refresh-docs').hidden   = !isDocsPage;
+
+  if (isDocsPage) carregarDocumentos();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ── Busca em tempo real ──────────────────────────────────────
+document.getElementById('search-docs').addEventListener('input', function () {
+  renderTabela(_todosDocumentos, _filtroAtual, this.value.trim().toLowerCase());
+});
+
+// ── Carregar documentos ──────────────────────────────────────
+async function carregarDocumentos() {
+  var btn  = document.getElementById('btn-refresh-inline');
+  var icon = document.getElementById('refresh-icon');
+  var lbl  = document.getElementById('refresh-label');
+  if (btn) { btn.disabled = true; icon.classList.add('spin'); lbl.textContent = 'Atualizando...'; }
+  document.getElementById('docs-tbody').innerHTML =
+    '<tr class="table-empty" id="table-loading"><td colspan="5"><div class="table-loading-state"><div class="spinner-sm"></div><p>Carregando documentos...</p></div></td></tr>';
+  try {
+    var r    = await fetch('/api/docs');
+    var docs = await r.json();
+    _todosDocumentos = docs;
+    atualizarMetricas(docs);
+    renderTabela(docs, _filtroAtual, document.getElementById('search-docs').value.trim().toLowerCase());
+    // badge de pendentes no nav
+    var pend = docs.filter(d => d.status === 'pendente').length;
+    var badge = document.getElementById('badge-pendentes');
+    badge.textContent = pend;
+    badge.hidden = pend === 0;
+  } catch(e) {
+    document.getElementById('docs-tbody').innerHTML =
+      '<tr class="table-empty"><td colspan="5"><p style="color:#ef4444">Erro ao carregar documentos.</p></td></tr>';
+  } finally {
+    if (btn) { btn.disabled = false; icon.classList.remove('spin'); lbl.textContent = 'Atualizar'; }
+  }
+}
+
+function atualizarMetricas(docs) {
+  var total     = docs.length;
+  var assinados = docs.filter(d => d.status === 'assinado').length;
+  var pendentes = docs.filter(d => d.status === 'pendente').length;
+  document.getElementById('metric-total').textContent     = total;
+  document.getElementById('metric-assinados').textContent = assinados;
+  document.getElementById('metric-pendentes').textContent = pendentes;
+}
+
+function filtrarDocs(btn, filtro) {
+  document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _filtroAtual = filtro;
+  var busca = document.getElementById('search-docs').value.trim().toLowerCase();
+  renderTabela(_todosDocumentos, filtro, busca);
+}
+
+function renderTabela(docs, filtro, busca) {
+  var lista = docs.filter(function(d) {
+    var passaFiltro = filtro === 'todos' || d.status === filtro;
+    var passaBusca  = !busca || d.nome.toLowerCase().includes(busca) || (d.cpf && d.cpf.includes(busca));
+    return passaFiltro && passaBusca;
+  });
+
+  document.getElementById('table-count').textContent =
+    lista.length + ' documento' + (lista.length !== 1 ? 's' : '');
+
+  if (lista.length === 0) {
+    document.getElementById('docs-tbody').innerHTML =
+      '<tr class="table-empty"><td colspan="5"><div class="table-empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>Nenhum documento encontrado</p></div></td></tr>';
+    return;
+  }
+
+  document.getElementById('docs-tbody').innerHTML = lista.map(function(d) {
+    var dataStr = new Date(d.criadoEm).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    var badge   = d.status === 'assinado'
+      ? '<span class="status-badge status-badge--green">Assinado</span>'
+      : '<span class="status-badge status-badge--yellow">Pendente</span>';
+
+    var acoes = d.status === 'assinado'
+      ? '<button class="btn-icon btn-icon--green" title="Baixar PDF" onclick="baixarPdf(\'' + d.token + '\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>'
+      : '<button class="btn-icon" title="Copiar link" onclick="copiarLink(\'' + d.token + '\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>';
+
+    acoes += '<button class="btn-icon" title="Ver detalhes" onclick="verDetalhe(\'' + d.token + '\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>';
+
+    return '<tr onclick="verDetalhe(\'' + d.token + '\')" style="cursor:pointer">'
+      + '<td><div class="td-nome"><div class="td-avatar">' + d.nome.charAt(0).toUpperCase() + '</div><div><p class="td-nome-text">' + escaparHtml(d.nome) + '</p></div></div></td>'
+      + '<td class="td-mono">' + (d.cpf || '—') + '</td>'
+      + '<td class="td-date">' + dataStr + '</td>'
+      + '<td>' + badge + '</td>'
+      + '<td class="td-acoes" onclick="event.stopPropagation()">' + acoes + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+function escaparHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function baixarPdf(token) {
+  window.open('/api/doc/' + token + '/pdf', '_blank');
+}
+
+function copiarLink(token) {
+  navigator.clipboard.writeText(location.origin + '/assinar/' + token).then(function() {
+    mostrarToast('Link copiado!');
+  });
+}
+
+async function apagarTodosDocumentos() {
+  if (!confirm('Apagar TODOS os documentos? Esta ação não pode ser desfeita.')) return;
+  await fetch('/api/docs', { method: 'DELETE' });
+  carregarDocumentos();
+}
+
+function verDetalhe(token) {
+  var doc = _todosDocumentos.find(d => d.token === token);
+  if (!doc) return;
+
+  var dataStr = new Date(doc.criadoEm).toLocaleString('pt-BR', { dateStyle:'full', timeStyle:'short' });
+  var assinadoStr = doc.assinadoEm ? new Date(doc.assinadoEm).toLocaleString('pt-BR', { dateStyle:'full', timeStyle:'short' }) : null;
+
+  var html = '<div class="detail-section">'
+    + '<p class="detail-label">Signatário</p><p class="detail-value">' + escaparHtml(doc.nome) + '</p>'
+    + '</div><div class="detail-section">'
+    + '<p class="detail-label">CPF</p><p class="detail-value">' + (doc.cpf || '—') + '</p>'
+    + '</div><div class="detail-section">'
+    + '<p class="detail-label">Criado em</p><p class="detail-value">' + dataStr + '</p>'
+    + '</div><div class="detail-section">'
+    + '<p class="detail-label">Status</p><p class="detail-value">'
+    + (doc.status === 'assinado' ? '<span class="status-badge status-badge--green">Assinado</span>' : '<span class="status-badge status-badge--yellow">Pendente</span>')
+    + '</p></div>';
+
+  if (assinadoStr) {
+    html += '<div class="detail-section"><p class="detail-label">Assinado em</p><p class="detail-value">' + assinadoStr + '</p></div>';
+  }
+
+  if (doc.ip) {
+    html += '<div class="detail-section"><p class="detail-label">IP do cliente</p><p class="detail-value td-mono">' + doc.ip + '</p></div>';
+  }
+
+  html += '<div class="detail-section detail-section--full"><p class="detail-label">Texto da declaração</p>'
+    + '<div class="detail-texto">' + escaparHtml(doc.texto) + '</div></div>';
+
+  var footer = '<div class="modal-footer">';
+  if (doc.status === 'pendente') {
+    footer += '<button class="btn btn-outline" onclick="copiarLink(\'' + doc.token + '\')">Copiar link de assinatura</button>';
+  } else {
+    footer += '<a class="btn btn-primary" href="/api/doc/' + doc.token + '/pdf" target="_blank">Baixar PDF assinado</a>';
+  }
+  footer += '<button class="btn btn-ghost" onclick="fecharModal()">Fechar</button></div>';
+
+  document.getElementById('modal-body').innerHTML = html + footer;
+  document.getElementById('modal-overlay').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharModal() {
+  document.getElementById('modal-overlay').hidden = true;
+  document.body.style.overflow = '';
+}
+
+// Toast simples
+function mostrarToast(msg) {
+  var t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('toast--show'));
+  setTimeout(() => { t.classList.remove('toast--show'); setTimeout(() => t.remove(), 300); }, 2200);
+}
+</script>
 </body>
 </html>

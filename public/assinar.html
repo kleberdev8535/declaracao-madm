@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Assinar Declaração</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    #2e3250;
+      --border2:   #3d4270;
+      --text:      #e8eaf6;
+      --muted:     #7b82b0;
+      --primary:   #4f6ef7;
+      --primary-h: #6b85ff;
+      --success:   #22c55e;
+      --warn:      #f59e0b;
+      --radius:    14px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── TOPO ── */
+    .topo {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(15,17,23,.9);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 1.25rem;
+      display: flex; align-items: center; gap: 0.85rem;
+    }
+    .logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(79,110,247,.4);
+    }
+    .topo-info h1 { font-size: 0.95rem; font-weight: 700; }
+    .topo-info p  { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+
+    /* ── STEPS ── */
+    .steps {
+      display: flex; align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .step {
+      display: flex; align-items: center; gap: 0.4rem;
+      flex: 1; font-size: 0.68rem; font-weight: 500;
+      color: var(--muted); transition: color .25s;
+    }
+    .step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--surface2); border: 1.5px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; font-weight: 700; flex-shrink: 0;
+      transition: all .25s;
+    }
+    .step.ativo { color: var(--primary-h); }
+    .step.ativo .step-num { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 0 3px rgba(79,110,247,.25); }
+    .step.feito { color: var(--success); }
+    .step.feito .step-num { background: var(--success); border-color: var(--success); color: #fff; }
+    .step-line { flex: 1; height: 1px; background: var(--border2); margin: 0 0.35rem; }
+
+    /* ── WRAP ── */
+    .wrap {
+      max-width: 580px; margin: 0 auto;
+      padding: 1.75rem 1.25rem 9rem;
+    }
+
+    .secao-head { margin-bottom: 1.25rem; }
+    .secao-head h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: -.02em; }
+    .secao-head p  { font-size: 0.82rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* Documento */
+    .doc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      font-size: 0.9rem; line-height: 1.75;
+      color: #c8cce8; white-space: pre-wrap; word-break: break-word;
+    }
+
+    /* Canvas assinatura */
+    .canvas-outer {
+      border-radius: var(--radius);
+      border: 2px dashed var(--border2);
+      background: #fff; overflow: hidden; position: relative;
+      transition: border-color .2s;
+    }
+    .canvas-outer.tem-tracos { border-color: var(--primary); border-style: solid; }
+    .canvas-outer canvas {
+      display: block; width: 100% !important; height: 220px !important;
+      cursor: crosshair; touch-action: none;
+    }
+    .canvas-hint {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      pointer-events: none; gap: 0.4rem;
+    }
+    .canvas-hint span:first-child { font-size: 2rem; }
+    .canvas-hint span:last-child  { font-size: 0.8rem; color: #aaa; }
+    .canvas-linha {
+      position: absolute; bottom: 38px; left: 10%; right: 10%;
+      height: 1px; background: #ddd; pointer-events: none;
+    }
+    .canvas-acoes {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 0.65rem;
+    }
+    .canvas-acoes span { font-size: 0.78rem; color: var(--muted); }
+    .canvas-acoes span.ok { color: var(--success); }
+    .btn-limpar {
+      display: flex; align-items: center; gap: 0.4rem;
+      background: none; border: 1px solid var(--border2);
+      color: var(--muted); padding: 0.35rem 0.8rem;
+      border-radius: 8px; font-size: 0.78rem; cursor: pointer;
+      font-family: inherit; transition: all .15s;
+    }
+    .btn-limpar:hover { border-color: var(--text); color: var(--text); }
+
+    /* Aviso legal */
+    .aviso {
+      margin-top: 1.25rem;
+      background: rgba(245,158,11,.06);
+      border: 1px solid rgba(245,158,11,.25);
+      border-left: 3px solid var(--warn);
+      border-radius: 10px;
+      padding: 0.9rem 1rem;
+      font-size: 0.79rem; color: #c8ad7a; line-height: 1.55;
+    }
+    .aviso strong { color: var(--warn); }
+
+    /* ── CÂMERA ── */
+    .camera-wrap {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+    }
+    .camera-wrap video {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .camera-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .camera-frame {
+      width: 70%; aspect-ratio: 3/4;
+      border: 2px solid rgba(79,110,247,.7);
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.45);
+    }
+    .camera-label {
+      position: absolute; bottom: 1rem; left: 0; right: 0;
+      text-align: center;
+      font-size: 0.75rem; color: rgba(255,255,255,.7);
+    }
+    .foto-preview {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 2px solid var(--success);
+      position: relative;
+    }
+    .foto-preview img {
+      width: 100%; display: block;
+      object-fit: cover; aspect-ratio: 4/3;
+    }
+    .foto-badge {
+      position: absolute; top: 0.6rem; left: 0.6rem;
+      background: var(--success); color: #fff;
+      font-size: 0.72rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 999px;
+    }
+    .camera-acoes {
+      display: flex; gap: 0.65rem; margin-top: 0.75rem;
+    }
+    .btn-cam {
+      flex: 1; padding: 0.7rem;
+      border-radius: var(--radius); border: none;
+      font-family: inherit; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .btn-cam-primary {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: #fff; box-shadow: 0 4px 14px rgba(79,110,247,.35);
+    }
+    .btn-cam-primary:hover { opacity: .9; }
+    .btn-cam-secondary {
+      background: var(--surface2); color: var(--muted);
+      border: 1px solid var(--border2);
+    }
+    .btn-cam-secondary:hover { color: var(--text); }
+
+    /* Info câmera */
+    .camera-info {
+      margin-bottom: 1.1rem;
+      background: rgba(79,110,247,.07);
+      border: 1px solid rgba(79,110,247,.2);
+      border-left: 3px solid var(--primary);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      font-size: 0.8rem; color: #a5b4fc; line-height: 1.55;
+    }
+
+    /* Erro câmera */
+    .camera-erro {
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.25);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .camera-erro p { font-size: 0.85rem; color: #f87171; margin-top: 0.5rem; }
+
+    /* Sucesso */
+    .sucesso { text-align: center; padding: 2rem 0; }
+    .sucesso-icone {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(34,197,94,.12); border: 2px solid rgba(34,197,94,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 1.25rem;
+    }
+    .sucesso h2 { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .sucesso > p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.75rem; }
+    .comprovante {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; text-align: left;
+    }
+    .comprovante-head {
+      padding: 0.9rem 1.1rem; background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; color: var(--muted);
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .comprovante-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--border); gap: 1rem;
+    }
+    .comprovante-row:last-child { border-bottom: none; }
+    .comprovante-label { font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
+    .comprovante-val   { font-size: 0.8rem; color: var(--text); text-align: right; word-break: break-all; font-family: monospace; }
+    .comprovante-val.destaque { color: var(--success); font-weight: 600; font-family: inherit; }
+
+    /* Erro */
+    .erro { text-align: center; padding: 3rem 1rem; }
+    .erro-icone {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(239,68,68,.1); border: 2px solid rgba(239,68,68,.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem; margin: 0 auto 1.25rem;
+    }
+    .erro h2 { color: #f87171; font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .erro p  { color: var(--muted); font-size: 0.86rem; line-height: 1.5; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 4rem 1rem; }
+    .spinner {
+      width: 38px; height: 38px;
+      border: 3px solid var(--surface2); border-top-color: var(--primary);
+      border-radius: 50%; animation: spin .75s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { color: var(--muted); font-size: 0.86rem; }
+
+    /* Rodapé fixo */
+    .rodape {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+      padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+      background: rgba(15,17,23,.92);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+    }
+    .btn-main {
+      width: 100%; padding: 1rem;
+      border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+      transition: all .18s;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: #fff; box-shadow: 0 4px 20px rgba(79,110,247,.35);
+    }
+    .btn-main:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(79,110,247,.5); }
+    .btn-main:active:not(:disabled) { transform: translateY(0); }
+    .btn-main:disabled { opacity: .35; cursor: default; box-shadow: none; transform: none; }
+    .btn-main.verde {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+      box-shadow: 0 4px 20px rgba(22,163,74,.35);
+    }
+    .btn-main.verde:hover:not(:disabled) { box-shadow: 0 6px 24px rgba(22,163,74,.5); }
+
+    .fade { animation: fadeUp .3s ease both; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="logo">🔐</div>
+  <div class="topo-info">
+    <h1>Assinatura Digital</h1>
+    <p>Documento com validade jurídica</p>
+  </div>
+</header>
+
+<nav class="steps" id="nav-steps">
+  <div class="step ativo" id="step-1"><div class="step-num">1</div><span>Ler</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step-2"><div class="step-num">2</div><span>Assinar</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step-3"><div class="step-num">3</div><span>Foto</span></div>
+  <div class="step-line"></div>
+  <div class="step" id="step-4"><div class="step-num">4</div><span>Concluído</span></div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Loading -->
+  <div class="loading" id="tela-loading">
+    <div class="spinner"></div>
+    <p>Carregando documento...</p>
+  </div>
+
+  <!-- Erro -->
+  <div id="tela-erro" hidden>
+    <div class="erro">
+      <div class="erro-icone">⚠️</div>
+      <h2>Link inválido</h2>
+      <p id="msg-erro">Este link não existe, já foi utilizado ou expirou.</p>
+    </div>
+  </div>
+
+  <!-- Passo 1: Ler -->
+  <div id="tela-ler" hidden>
+    <div class="secao-head fade">
+      <h2>Leia o documento</h2>
+      <p>Leia com atenção antes de assinar</p>
+    </div>
+    <div class="doc-card fade" id="texto-declaracao"></div>
+  </div>
+
+  <!-- Passo 2: Assinar -->
+  <div id="tela-assinar" hidden>
+    <div class="secao-head fade">
+      <h2>Assine abaixo</h2>
+      <p>Use o dedo ou o mouse — desenhe sua assinatura na área branca</p>
+    </div>
+
+    <div class="canvas-outer fade" id="canvas-outer">
+      <canvas id="sig-canvas"></canvas>
+      <div class="canvas-hint" id="canvas-hint">
+        <span>✍️</span>
+        <span>Toque aqui para assinar</span>
+      </div>
+      <div class="canvas-linha"></div>
+    </div>
+
+    <div class="canvas-acoes">
+      <span id="canvas-status">Aguardando assinatura...</span>
+      <button class="btn-limpar" id="btn-limpar">↺ Limpar</button>
+    </div>
+
+    <div class="aviso fade">
+      <strong>Atenção:</strong> Ao assinar, você confirma que leu e concorda com o documento acima
+      e declara que as informações são verdadeiras, sob as penas do
+      <strong>Art. 299 do Código Penal</strong> – Omitir, em documento público ou particular,
+      declaração que dele devia constar, ou nele inserir ou fazer inserir declaração falsa ou
+      diversa da que devia ser escrita, com o fim de prejudicar direito, criar obrigação ou
+      alterar a verdade sobre fato juridicamente relevante.
+    </div>
+  </div>
+
+  <!-- Passo 3: Foto -->
+  <div id="tela-foto" hidden>
+    <div class="secao-head fade">
+      <h2>Foto para validação</h2>
+      <p>Tire uma selfie segurando seu documento (RG ou CNH) para confirmar sua identidade</p>
+    </div>
+
+    <div class="camera-info fade">
+      📷 <strong>Por que pedimos uma foto?</strong> Ela é anexada ao PDF assinado como comprovante
+      adicional de identidade, aumentando a validade jurídica do documento.
+    </div>
+
+    <!-- Câmera ativa -->
+    <div id="camera-ativa" hidden>
+      <div class="camera-wrap fade">
+        <video id="camera-video" autoplay playsinline muted></video>
+        <div class="camera-overlay">
+          <div class="camera-frame"></div>
+        </div>
+        <div class="camera-label">Posicione seu rosto e documento dentro da moldura</div>
+      </div>
+      <div class="camera-acoes">
+        <button class="btn-cam btn-cam-primary" id="btn-tirar-foto">📸 Tirar foto</button>
+        <button class="btn-cam btn-cam-secondary" id="btn-trocar-camera">🔄 Virar câmera</button>
+      </div>
+    </div>
+
+    <!-- Preview da foto tirada -->
+    <div id="foto-tirada" hidden>
+      <div class="foto-preview fade">
+        <img id="foto-img" src="" alt="Sua foto" />
+        <div class="foto-badge">✓ Foto capturada</div>
+      </div>
+      <div class="camera-acoes">
+        <button class="btn-cam btn-cam-secondary" id="btn-refazer-foto">↺ Refazer foto</button>
+      </div>
+    </div>
+
+    <!-- Erro de permissão -->
+    <div id="camera-erro" hidden>
+      <div class="camera-erro fade">
+        <div style="font-size:2.5rem">📵</div>
+        <p>Câmera não disponível ou sem permissão.</p>
+        <p style="margin-top:.5rem;font-size:.8rem;color:var(--muted)">
+          Verifique se você permitiu o acesso à câmera nas configurações do navegador.
+        </p>
+      </div>
+      <div style="margin-top:1rem;text-align:center">
+        <button class="btn-cam btn-cam-secondary" style="max-width:220px;margin:0 auto"
+          id="btn-pular-foto">Continuar sem foto</button>
+      </div>
+    </div>
+
+    <!-- Canvas oculto para captura -->
+    <canvas id="foto-canvas" hidden></canvas>
+  </div>
+
+  <!-- Passo 4: Sucesso -->
+  <div id="tela-sucesso" hidden>
+    <div class="sucesso fade">
+      <div class="sucesso-icone">✅</div>
+      <h2>Documento assinado!</h2>
+      <p>Sua assinatura foi registrada com sucesso e tem validade jurídica.</p>
+      <div class="comprovante">
+        <div class="comprovante-head">Comprovante de assinatura</div>
+        <div id="comp-rows"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Botão fixo -->
+<div class="rodape" id="rodape" hidden>
+  <button class="btn-main" id="btn-acao" disabled>Carregando...</button>
+</div>
+
+<script>
+(function () {
+  var token  = location.pathname.split('/').pop();
+  var passo  = 0;
+  var hasSig = false;
+  var fotoDataUrl = null;      // foto capturada (pode ser null se pulada)
+  var stream = null;           // MediaStream da câmera
+  var facingMode = 'user';     // 'user' = frontal, 'environment' = traseira
+
+  /* ══════════════════ NAVEGAÇÃO ══════════════════ */
+  function mostrarPasso(n) {
+    passo = n;
+    document.getElementById('tela-loading').hidden = true;
+    document.getElementById('tela-erro').hidden    = n !== -1;
+    document.getElementById('tela-ler').hidden     = n !== 1;
+    document.getElementById('tela-assinar').hidden = n !== 2;
+    document.getElementById('tela-foto').hidden    = n !== 3;
+    document.getElementById('tela-sucesso').hidden = n !== 4;
+    document.getElementById('nav-steps').hidden    = n < 0;
+    document.getElementById('rodape').hidden       = n < 0 || n === 4;
+
+    [1,2,3,4].forEach(function(i) {
+      var el = document.getElementById('step-' + i);
+      el.className = 'step' + (i < n ? ' feito' : i === n ? ' ativo' : '');
+    });
+
+    var btn = document.getElementById('btn-acao');
+    if (n === 1) {
+      btn.textContent = 'Li o documento — ir para assinatura';
+      btn.className = 'btn-main'; btn.disabled = false;
+    } else if (n === 2) {
+      btn.textContent = 'Continuar para foto';
+      btn.className = 'btn-main verde'; btn.disabled = !hasSig;
+    } else if (n === 3) {
+      btn.textContent = 'Enviar e concluir';
+      btn.className = 'btn-main verde';
+      btn.disabled = (fotoDataUrl === null); // habilita apenas quando foto tirada (ou pulada explicitamente)
+    }
+  }
+
+  function mostrarErro(msg) {
+    document.getElementById('tela-loading').hidden = true;
+    document.getElementById('msg-erro').textContent = msg;
+    document.getElementById('tela-erro').hidden = false;
+    document.getElementById('nav-steps').hidden = true;
+    document.getElementById('rodape').hidden    = true;
+  }
+
+  /* ══════════════════ CARREGA DOC ══════════════════ */
+  fetch('/api/doc/' + token)
+    .then(function(r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function(doc) {
+      if (doc.status === 'assinado') {
+        mostrarErro('Este documento já foi assinado em '
+          + new Date(doc.assinadoEm).toLocaleString('pt-BR') + '.');
+        return;
+      }
+      document.getElementById('texto-declaracao').textContent = doc.texto;
+      mostrarPasso(1);
+    })
+    .catch(function() { mostrarErro('Link inválido, expirado ou já utilizado.'); });
+
+  /* ══════════════════ CANVAS ASSINATURA ══════════════════ */
+  var canvas  = document.getElementById('sig-canvas');
+  var ctx     = canvas.getContext('2d');
+  var drawing = false;
+
+  function initCanvas() {
+    var outer = document.getElementById('canvas-outer');
+    var dpr = window.devicePixelRatio || 1;
+    var w   = outer.clientWidth;
+    canvas.width  = Math.round(w * dpr);
+    canvas.height = Math.round(220 * dpr);
+    canvas.style.width  = w + 'px';
+    canvas.style.height = '220px';
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 2.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+  }
+
+  function getXY(e) {
+    var r = canvas.getBoundingClientRect();
+    var s = e.touches ? e.touches[0] : e;
+    return { x: s.clientX - r.left, y: s.clientY - r.top };
+  }
+
+  function onStart(e) {
+    e.preventDefault(); drawing = true;
+    var p = getXY(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+  }
+  function onMove(e) {
+    e.preventDefault(); if (!drawing) return;
+    var p = getXY(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    if (!hasSig) {
+      hasSig = true;
+      document.getElementById('canvas-hint').style.display = 'none';
+      document.getElementById('canvas-outer').classList.add('tem-tracos');
+      document.getElementById('canvas-status').textContent = '✓ Assinatura detectada';
+      document.getElementById('canvas-status').className = 'ok';
+      if (passo === 2) document.getElementById('btn-acao').disabled = false;
+    }
+  }
+  function onEnd(e) { e.preventDefault(); drawing = false; ctx.beginPath(); }
+
+  canvas.addEventListener('mousedown',   onStart);
+  canvas.addEventListener('mousemove',   onMove);
+  canvas.addEventListener('mouseup',     onEnd);
+  canvas.addEventListener('mouseleave',  onEnd);
+  canvas.addEventListener('touchstart',  onStart, { passive: false });
+  canvas.addEventListener('touchmove',   onMove,  { passive: false });
+  canvas.addEventListener('touchend',    onEnd,   { passive: false });
+  canvas.addEventListener('touchcancel', onEnd,   { passive: false });
+
+  document.getElementById('btn-limpar').addEventListener('click', function() {
+    var dpr = window.devicePixelRatio || 1;
+    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    hasSig = false;
+    document.getElementById('canvas-hint').style.display = '';
+    document.getElementById('canvas-outer').classList.remove('tem-tracos');
+    document.getElementById('canvas-status').textContent = 'Aguardando assinatura...';
+    document.getElementById('canvas-status').className = '';
+    document.getElementById('btn-acao').disabled = true;
+  });
+
+  /* ══════════════════ CÂMERA ══════════════════ */
+  function pararCamera() {
+    if (stream) { stream.getTracks().forEach(function(t) { t.stop(); }); stream = null; }
+  }
+
+  function iniciarCamera() {
+    pararCamera();
+    document.getElementById('camera-ativa').hidden = false;
+    document.getElementById('foto-tirada').hidden  = true;
+    document.getElementById('camera-erro').hidden  = true;
+
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    })
+    .then(function(s) {
+      stream = s;
+      var video = document.getElementById('camera-video');
+      video.srcObject = s;
+    })
+    .catch(function() {
+      document.getElementById('camera-ativa').hidden = true;
+      document.getElementById('camera-erro').hidden  = false;
+      // Se sem câmera, permite enviar sem foto
+      fotoDataUrl = '';
+      document.getElementById('btn-acao').disabled = false;
+    });
+  }
+
+  document.getElementById('btn-tirar-foto').addEventListener('click', function() {
+    var video  = document.getElementById('camera-video');
+    var fc     = document.getElementById('foto-canvas');
+    fc.width   = video.videoWidth  || 1280;
+    fc.height  = video.videoHeight || 960;
+    fc.getContext('2d').drawImage(video, 0, 0, fc.width, fc.height);
+    fotoDataUrl = fc.toDataURL('image/jpeg', 0.88);
+
+    document.getElementById('foto-img').src = fotoDataUrl;
+    document.getElementById('camera-ativa').hidden = true;
+    document.getElementById('foto-tirada').hidden  = false;
+    pararCamera();
+
+    document.getElementById('btn-acao').disabled = false;
+  });
+
+  document.getElementById('btn-refazer-foto').addEventListener('click', function() {
+    fotoDataUrl = null;
+    document.getElementById('btn-acao').disabled = true;
+    iniciarCamera();
+  });
+
+  document.getElementById('btn-trocar-camera').addEventListener('click', function() {
+    facingMode = facingMode === 'user' ? 'environment' : 'user';
+    iniciarCamera();
+  });
+
+  document.getElementById('btn-pular-foto').addEventListener('click', function() {
+    fotoDataUrl = '';                               // string vazia = sem foto, mas consentiu
+    document.getElementById('btn-acao').disabled = false;
+  });
+
+  /* ══════════════════ BOTÃO PRINCIPAL ══════════════════ */
+  document.getElementById('btn-acao').addEventListener('click', function() {
+
+    /* Passo 1 → 2 */
+    if (passo === 1) {
+      mostrarPasso(2);
+      requestAnimationFrame(function() { requestAnimationFrame(initCanvas); });
+      return;
+    }
+
+    /* Passo 2 → 3 */
+    if (passo === 2) {
+      mostrarPasso(3);
+      requestAnimationFrame(iniciarCamera);
+      return;
+    }
+
+    /* Passo 3 → enviar */
+    if (passo === 3) {
+      var btn = document.getElementById('btn-acao');
+      btn.disabled    = true;
+      btn.textContent = 'Registrando...';
+
+      var assinaturaImg = canvas.toDataURL('image/png');
+
+      fetch('/api/doc/' + token + '/concluir', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assinatura: assinaturaImg,
+          foto: fotoDataUrl || ''
+        })
+      })
+      .then(function(r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function(data) {
+        pararCamera();
+        var rows = [
+          { label: 'Status',      val: '✅ Assinado', destaque: true },
+          { label: 'Assinado em', val: new Date(data.assinadoEm).toLocaleString('pt-BR') },
+          { label: 'Protocolo',   val: token },
+        ];
+        document.getElementById('comp-rows').innerHTML = rows.map(function(r) {
+          return '<div class="comprovante-row">'
+            + '<span class="comprovante-label">' + r.label + '</span>'
+            + '<span class="comprovante-val' + (r.destaque ? ' destaque' : '') + '">' + r.val + '</span>'
+            + '</div>';
+        }).join('');
+        mostrarPasso(4);
+      })
+      .catch(function() {
+        btn.disabled    = false;
+        btn.textContent = 'Enviar e concluir';
+        alert('Erro ao registrar assinatura. Tente novamente.');
+      });
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
