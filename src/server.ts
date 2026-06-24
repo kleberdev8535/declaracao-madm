@@ -186,7 +186,7 @@ app.post('/api/assinar', async (req, res) => {
 app.get('/api/doc/:token', async (req, res) => {
   const { data, error } = await supabase
     .from('documentos')
-    .select('token, nome, cpf, criado_em, status, assinado_em, ip, pdf_url')
+    .select('token, nome, cpf, texto, criado_em, status, assinado_em, ip, pdf_url')
     .eq('token', req.params.token)
     .single();
   if (error || !data) return res.status(404).json({ erro: 'Documento não encontrado.' });
