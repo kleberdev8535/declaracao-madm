@@ -526,7 +526,7 @@
     .then(function(doc) {
       if (doc.status === 'assinado') {
         mostrarErro('Este documento já foi assinado em '
-          + new Date(doc.assinadoEm).toLocaleString('pt-BR') + '.');
+          + new Date(doc.assinado_em).toLocaleString('pt-BR') + '.');
         return;
       }
       document.getElementById('texto-declaracao').textContent = doc.texto;
@@ -699,7 +699,7 @@
         pararCamera();
         var rows = [
           { label: 'Status',      val: '✅ Assinado', destaque: true },
-          { label: 'Assinado em', val: new Date(data.assinadoEm).toLocaleString('pt-BR') },
+          { label: 'Assinado em', val: new Date(data.assinado_em).toLocaleString('pt-BR') },
           { label: 'Protocolo',   val: token },
         ];
         document.getElementById('comp-rows').innerHTML = rows.map(function(r) {

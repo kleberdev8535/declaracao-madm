@@ -463,7 +463,7 @@ function renderTabela(docs, filtro, busca) {
   }
 
   document.getElementById('docs-tbody').innerHTML = lista.map(function(d) {
-    var dataStr = new Date(d.criadoEm).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    var dataStr = new Date(d.criado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
     var badge   = d.status === 'assinado'
       ? '<span class="status-badge status-badge--green">Assinado</span>'
       : '<span class="status-badge status-badge--yellow">Pendente</span>';
@@ -508,8 +508,8 @@ function verDetalhe(token) {
   var doc = _todosDocumentos.find(d => d.token === token);
   if (!doc) return;
 
-  var dataStr = new Date(doc.criadoEm).toLocaleString('pt-BR', { dateStyle:'full', timeStyle:'short' });
-  var assinadoStr = doc.assinadoEm ? new Date(doc.assinadoEm).toLocaleString('pt-BR', { dateStyle:'full', timeStyle:'short' }) : null;
+  var dataStr = new Date(doc.criado_em).toLocaleString('pt-BR', { dateStyle:'full', timeStyle:'short' });
+  var assinadoStr = doc.assinado_em ? new Date(doc.assinado_em).toLocaleString('pt-BR', { dateStyle:'full', timeStyle:'short' }) : null;
 
   var html = '<div class="detail-section">'
     + '<p class="detail-label">Signatário</p><p class="detail-value">' + escaparHtml(doc.nome) + '</p>'

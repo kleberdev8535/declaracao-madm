@@ -652,7 +652,7 @@
             if (doc.status === 'assinado') {
               clearInterval(poll);
               document.getElementById('link-polling').hidden = true;
-              var assinadoEm = new Date(doc.assinadoEm).toLocaleString('pt-BR');
+              var assinadoEm = new Date(doc.assinado_em).toLocaleString('pt-BR');
               document.getElementById('link-status').innerHTML =
                 '<span style="color:var(--green);font-weight:700">✓ Assinado em ' + assinadoEm + '</span>'
                 + ' &nbsp;—&nbsp; '
