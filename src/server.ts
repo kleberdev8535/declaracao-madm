@@ -193,6 +193,13 @@ app.get('/api/doc/:token', async (req, res) => {
   res.json(data);
 });
 
+// Apaga um documento individual
+app.delete('/api/doc/:token', async (req, res) => {
+  await supabase.storage.from('pdfs').remove([`${req.params.token}.pdf`]);
+  await supabase.from('documentos').delete().eq('token', req.params.token);
+  res.json({ ok: true });
+});
+
 // Cliente envia assinatura → gera PDF e sobe no Supabase Storage
 app.post('/api/doc/:token/concluir', async (req, res) => {
   const { data: doc, error: fetchErr } = await supabase

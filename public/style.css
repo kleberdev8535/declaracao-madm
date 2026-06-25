@@ -682,6 +682,7 @@ body {
 
 .btn-icon:hover { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
 .btn-icon--green:hover { background: var(--green-soft); border-color: var(--green-border); color: var(--green); }
+.btn-icon--red:hover { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.4); color: #ef4444; }
 
 /* ═══════════════════════════════════════════════════ BUTTONS */
 .btn {
