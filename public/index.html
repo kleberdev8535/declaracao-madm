@@ -507,6 +507,12 @@ async function excluirDoc(event, token) {
 }
 
 async function apagarTodosDocumentos() {
+  var pin = prompt('Digite o PIN para apagar todos os documentos:');
+  if (pin === null) return;
+  if (pin !== '8535') {
+    alert('PIN incorreto. Operação cancelada.');
+    return;
+  }
   if (!confirm('Apagar TODOS os documentos? Esta ação não pode ser desfeita.')) return;
   await fetch('https://declaracao-madm.onrender.com/api/docs', { method: 'DELETE' });
   carregarDocumentos();
