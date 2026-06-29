@@ -287,7 +287,14 @@
         <h1 class="page-title">Assinaturas</h1>
         <p class="page-subtitle">Acompanhe todos os documentos enviados para assinatura</p>
       </div>
-      <div style="display:flex;gap:0.5rem">
+      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:.35rem;">
+          <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">De</label>
+          <input type="date" id="filtro-data-de" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+          <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">Até</label>
+          <input type="date" id="filtro-data-ate" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+          <button onclick="limparFiltroData()" title="Limpar datas" style="font-size:.75rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-muted);cursor:pointer;">✕</button>
+        </div>
         <button class="btn btn-danger" onclick="apagarTodosDocumentos()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           Apagar tudo
@@ -324,13 +331,6 @@
             <button class="filter-tab active" data-filter="todos" onclick="filtrarDocs(this,'todos')">Todos</button>
             <button class="filter-tab" data-filter="pendente" onclick="filtrarDocs(this,'pendente')">Pendentes</button>
             <button class="filter-tab" data-filter="assinado" onclick="filtrarDocs(this,'assinado')">Assinados</button>
-          </div>
-          <div style="display:flex;align-items:center;gap:.35rem;">
-            <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">De</label>
-            <input type="date" id="filtro-data-de" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
-            <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">Até</label>
-            <input type="date" id="filtro-data-ate" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
-            <button onclick="limparFiltroData()" title="Limpar datas" style="font-size:.75rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-muted);cursor:pointer;">✕</button>
           </div>
           <button class="btn-refresh-inline" id="btn-refresh-inline" onclick="carregarDocumentos()" title="Atualizar">
             <svg id="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
