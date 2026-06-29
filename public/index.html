@@ -319,11 +319,18 @@
     <div class="table-card">
       <div class="table-toolbar">
         <p class="table-count" id="table-count">—</p>
-        <div style="display:flex;align-items:center;gap:.5rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
           <div class="filter-tabs">
             <button class="filter-tab active" data-filter="todos" onclick="filtrarDocs(this,'todos')">Todos</button>
             <button class="filter-tab" data-filter="pendente" onclick="filtrarDocs(this,'pendente')">Pendentes</button>
             <button class="filter-tab" data-filter="assinado" onclick="filtrarDocs(this,'assinado')">Assinados</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:.35rem;">
+            <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">De</label>
+            <input type="date" id="filtro-data-de" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+            <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">Até</label>
+            <input type="date" id="filtro-data-ate" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
+            <button onclick="limparFiltroData()" title="Limpar datas" style="font-size:.75rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-muted);cursor:pointer;">✕</button>
           </div>
           <button class="btn-refresh-inline" id="btn-refresh-inline" onclick="carregarDocumentos()" title="Atualizar">
             <svg id="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -446,11 +453,27 @@ function filtrarDocs(btn, filtro) {
   renderTabela(_todosDocumentos, filtro, busca);
 }
 
+function aplicarFiltroData() {
+  var busca = document.getElementById('search-docs').value.trim().toLowerCase();
+  renderTabela(_todosDocumentos, _filtroAtual, busca);
+}
+
+function limparFiltroData() {
+  document.getElementById('filtro-data-de').value = '';
+  document.getElementById('filtro-data-ate').value = '';
+  aplicarFiltroData();
+}
+
 function renderTabela(docs, filtro, busca) {
+  var dataDe  = document.getElementById('filtro-data-de').value;
+  var dataAte = document.getElementById('filtro-data-ate').value;
   var lista = docs.filter(function(d) {
     var passaFiltro = filtro === 'todos' || d.status === filtro;
     var passaBusca  = !busca || d.nome.toLowerCase().includes(busca) || (d.cpf && d.cpf.includes(busca));
-    return passaFiltro && passaBusca;
+    var dataDoc = d.criado_em ? d.criado_em.slice(0, 10) : '';
+    var passaDataDe  = !dataDe  || dataDoc >= dataDe;
+    var passaDataAte = !dataAte || dataDoc <= dataAte;
+    return passaFiltro && passaBusca && passaDataDe && passaDataAte;
   });
 
   document.getElementById('table-count').textContent =
