@@ -470,7 +470,7 @@ function renderTabela(docs, filtro, busca) {
   var lista = docs.filter(function(d) {
     var passaFiltro = filtro === 'todos' || d.status === filtro;
     var passaBusca  = !busca || d.nome.toLowerCase().includes(busca) || (d.cpf && d.cpf.includes(busca));
-    var dataDoc = d.criado_em ? d.criado_em.slice(0, 10) : '';
+    var dataDoc = d.criado_em ? (function(dt){ var d = new Date(dt); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(d.criado_em) : '';
     var passaDataDe  = !dataDe  || dataDoc >= dataDe;
     var passaDataAte = !dataAte || dataDoc <= dataAte;
     return passaFiltro && passaBusca && passaDataDe && passaDataAte;
