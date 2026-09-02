@@ -300,52 +300,66 @@
 
   // --- Extractor (portado de src/extractor.ts) ---
 
-  var LINE_EXTRACTORS = [
-    { field: 'nome',          re: /^nome(?:\s+completo)?\s+(.+)/i },
-    { field: 'nacionalidade', re: /^nacionalidade\s+(.+)/i },
-    { field: 'estadoCivil',   re: /^estado\s*civil\s+(.+)/i },
-    { field: 'profissao',     re: /^profiss[aã]o(?:\s+atual)?\s+(.+)/i },
-    { field: 'rg',            re: /^r\.?\s*g\.?\s+(.+)/i },
-    { field: 'rg',            re: /^identidade\s+(.+)/i },
-    { field: 'rg',            re: /^registro\s+geral\s+(.+)/i },
-    { field: 'cpf',           re: /^cpf\s+(.+)/i },
-    { field: 'rua',           re: /^rua\s+(.+)/i },
-    { field: 'rua',           re: /^avenida\s+(.+)/i },
-    { field: 'rua',           re: /^av\.?\s+(.+)/i },
-    { field: 'rua',           re: /^logradouro\s+(.+)/i },
-    // exclui "Endereço - Rua/Número/..." (rótulo composto do HubSpot, tratado no Passo 2)
-    { field: 'rua',           re: /^endere[cç]o\s+(?!-\s*\S)(.+)/i },
-    { field: 'numero',        re: /^n[uú]mero\s+(.+)/i },
-    { field: 'numero',        re: /^n[°º\.]\s*(.+)/i },
-    { field: 'complemento',   re: /^complemento\s+(.+)/i },
-    { field: 'bairro',        re: /^bairro\s+(.+)/i },
-    { field: 'cep',           re: /^cep\s+(.+)/i },
-    { field: 'cidade',        re: /^cidade\s+(.+)/i },
-    { field: 'uf',            re: /^uf\s+(.+)/i },
-    { field: 'uf',            re: /^estado\s+([A-Z]{2})$/i },
+  // Cada rótulo é testado apenas no INÍCIO da linha. O que sobra depois do
+  // rótulo pode ser: (a) o valor de verdade, já na mesma linha (formato antigo
+  // "Rótulo valor"), ou (b) lixo de OCR (ícones de histórico/copiar/menu que
+  // ficam do lado do rótulo no Hubspot) — nesse caso o valor real está na
+  // linha seguinte. `isMeaningfulValue` decide qual dos dois casos é.
+  var FIELD_LABELS = [
+    { field: 'nome',          re: /^nome(?:\s+completo)?\b(.*)$/i },
+    { field: 'sobrenome',     re: /^sobrenome\b(.*)$/i },
+    { field: 'nacionalidade', re: /^nacionalidade\b(.*)$/i },
+    { field: 'estadoCivil',   re: /^estado\s*civil\b(.*)$/i },
+    { field: 'profissao',     re: /^profiss[aã]o(?:\s+atual)?\b(.*)$/i },
+    { field: 'rg',            re: /^r\.?\s*g\.?\b(.*)$/i },
+    { field: 'rg',            re: /^identidade\b(.*)$/i },
+    { field: 'rg',            re: /^registro\s+geral\b(.*)$/i },
+    { field: 'cpf',           re: /^cpf\b(.*)$/i },
+    // rótulo composto do Hubspot ("Endereço - Rua" etc.) primeiro, depois os antigos
+    { field: 'rua',           re: /^endere[cç]o\s*-\s*rua\b(.*)$/i },
+    { field: 'rua',           re: /^rua\b(.*)$/i },
+    { field: 'rua',           re: /^avenida\b(.*)$/i },
+    { field: 'rua',           re: /^av\.?\b(.*)$/i },
+    { field: 'rua',           re: /^logradouro\b(.*)$/i },
+    // "Endereço" sozinho (não seguido de "- algumaCoisa") também vale como rua
+    { field: 'rua',           re: /^endere[cç]o\b(?!\s*-)(.*)$/i },
+    { field: 'numero',        re: /^endere[cç]o\s*-\s*n[uú]mero\b(.*)$/i },
+    { field: 'numero',        re: /^n[uú]mero\b(.*)$/i },
+    { field: 'numero',        re: /^n[°º.]\s*(.*)$/i },
+    { field: 'complemento',   re: /^endere[cç]o\s*-\s*complemento\b(.*)$/i },
+    { field: 'complemento',   re: /^complemento\b(.*)$/i },
+    { field: 'bairro',        re: /^endere[cç]o\s*-\s*bairro\b(.*)$/i },
+    { field: 'bairro',        re: /^bairro\b(.*)$/i },
+    { field: 'cep',           re: /^endere[cç]o\s*-\s*cep\b(.*)$/i },
+    { field: 'cep',           re: /^cep\b(.*)$/i },
+    { field: 'cidade',        re: /^cidade\b(.*)$/i },
+    { field: 'uf',            re: /^uf\b(.*)$/i },
   ];
 
-  // Rótulos que aparecem sozinhos numa linha, com o valor na linha seguinte
-  // (formato do CRM Hubspot: "Nome" \n "José", "Endereço - Rua" \n "Rua Tal", etc.)
-  var LABEL_ONLY_EXTRACTORS = [
-    { field: 'nome',          re: /^nome(?:\s+completo)?$/i },
-    { field: 'sobrenome',     re: /^sobrenome$/i },
-    { field: 'nacionalidade', re: /^nacionalidade$/i },
-    { field: 'estadoCivil',   re: /^estado\s*civil$/i },
-    { field: 'profissao',     re: /^profiss[aã]o(?:\s+atual)?$/i },
-    { field: 'rg',            re: /^(?:r\.?\s*g\.?|identidade|registro\s+geral)$/i },
-    { field: 'cpf',           re: /^cpf$/i },
-    { field: 'rua',           re: /^(?:endere[cç]o\s*-\s*)?(?:rua|avenida|av\.?|logradouro|endere[cç]o)$/i },
-    { field: 'numero',        re: /^(?:endere[cç]o\s*-\s*)?n[uú]mero$/i },
-    { field: 'complemento',   re: /^(?:endere[cç]o\s*-\s*)?complemento$/i },
-    { field: 'bairro',        re: /^(?:endere[cç]o\s*-\s*)?bairro$/i },
-    { field: 'cep',           re: /^(?:endere[cç]o\s*-\s*)?cep$/i },
-    { field: 'cidade',        re: /^cidade$/i },
-    { field: 'uf',            re: /^uf$/i },
-  ];
+  // Remove sobras de pontuação/ícones nas bordas do texto capturado após o rótulo
+  function cleanRemainder(str) {
+    return (str || '')
+      .replace(/^[\s:.\-–—]+/, '')
+      .replace(/[^\wÀ-ÿ)]+$/, '')
+      .trim();
+  }
 
-  function isLabelOnlyLine(line) {
-    return LABEL_ONLY_EXTRACTORS.some(function (p) { return p.re.test(line); });
+  // Só é considerado um valor de verdade se tiver pelo menos um dígito
+  // (números, CEP, CPF, RG) ou duas letras seguidas (nomes, cidade, UF...).
+  // Um ícone de OCR virando "©" ou "|" sozinho não passa nesse teste.
+  function isMeaningfulValue(str) {
+    return /\d/.test(str) || /[A-Za-zÀ-ÿ]{2,}/.test(str);
+  }
+
+  // Uma linha "é só rótulo" quando bate com algum FIELD_LABELS e o que sobra
+  // depois dele não é um valor de verdade — usado para não confundir a
+  // próxima linha em branco de um campo com o valor de outro campo.
+  function lineLooksLikeBareLabel(line) {
+    for (var i = 0; i < FIELD_LABELS.length; i++) {
+      var m = line.match(FIELD_LABELS[i].re);
+      if (m && !isMeaningfulValue(cleanRemainder(m[1]))) return true;
+    }
+    return false;
   }
 
   var CPF_RE = /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}\b/;
@@ -384,42 +398,33 @@
       bairro: null, cep: null, cidade: null, uf: null,
     };
 
-    // Passo 1: rótulo e valor na mesma linha (formato antigo, "Rótulo valor")
+    // Passo 1: para cada linha, testa os rótulos conhecidos no início dela.
+    // Se o que sobra na mesma linha for um valor de verdade, usa direto
+    // (formato antigo "Rótulo valor"). Senão, busca o valor na linha
+    // seguinte (formato Hubspot: rótulo numa linha, valor na de baixo).
     for (var i = 0; i < lines.length; i++) {
       var trimmed = lines[i].trim();
       if (!trimmed) continue;
-      for (var j = 0; j < LINE_EXTRACTORS.length; j++) {
-        var m = trimmed.match(LINE_EXTRACTORS[j].re);
-        if (m) {
-          var value = m[1].trim();
-          if (value && !result[LINE_EXTRACTORS[j].field]) {
-            result[LINE_EXTRACTORS[j].field] = value;
+
+      for (var j = 0; j < FIELD_LABELS.length; j++) {
+        var m = trimmed.match(FIELD_LABELS[j].re);
+        if (!m) continue;
+
+        var field = FIELD_LABELS[j].field;
+        if (result[field]) break; // já preenchido antes
+
+        var remainder = cleanRemainder(m[1]);
+        if (isMeaningfulValue(remainder)) {
+          result[field] = remainder;
+        } else {
+          for (var k = i + 1; k < lines.length; k++) {
+            var candidate = lines[k].trim();
+            if (!candidate) continue;
+            if (lineLooksLikeBareLabel(candidate)) break; // campo ficou vazio no CRM
+            if (/^-+$/.test(candidate)) break; // placeholder tipo "--"
+            result[field] = candidate;
+            break;
           }
-          break;
-        }
-      }
-    }
-
-    // Passo 2: rótulo sozinho na linha, valor na linha seguinte (formato Hubspot)
-    for (var a = 0; a < lines.length; a++) {
-      var labelLine = lines[a].trim().replace(/:$/, '').replace(/[^\wÀ-ÿ\s.\-]+$/g, '').trim();
-      if (!labelLine) continue;
-
-      for (var b = 0; b < LABEL_ONLY_EXTRACTORS.length; b++) {
-        if (!LABEL_ONLY_EXTRACTORS[b].re.test(labelLine)) continue;
-        var field = LABEL_ONLY_EXTRACTORS[b].field;
-        if (result[field]) break; // já preenchido pelo Passo 1
-
-        // Procura o valor na próxima linha não vazia
-        for (var c = a + 1; c < lines.length; c++) {
-          var candidate = lines[c].trim();
-          if (!candidate) continue;
-          // Se a linha seguinte já é outro rótulo, este campo ficou vazio no CRM
-          if (isLabelOnlyLine(candidate.replace(/:$/, '').trim())) break;
-          // Placeholders tipo "--" indicam campo vazio
-          if (/^-+$/.test(candidate)) break;
-          result[field] = candidate;
-          break;
         }
         break;
       }
@@ -434,6 +439,7 @@
     // Passo 3: fallback regex
     if (!result.cpf) { var mc = text.match(CPF_RE); if (mc) result.cpf = mc[0].trim(); }
     if (!result.cep) { var mce = text.match(CEP_RE); if (mce) result.cep = mce[0].trim(); }
+    if (!result.uf)  { var muf = text.match(/^estado\s+([A-Z]{2})$/im); if (muf) result.uf = muf[1]; }
     if (!result.rg) {
       for (var k = 0; k < lines.length; k++) {
         if (/\bR\.?\s*G\.?\b/i.test(lines[k])) {
