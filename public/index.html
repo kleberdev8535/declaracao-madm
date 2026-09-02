@@ -97,19 +97,41 @@
           <h2 class="card-title">Enviar Documento</h2>
         </div>
         <div class="card-body">
-          <div class="drop-zone" id="drop-zone" tabindex="0" role="region" aria-label="Área de upload">
-            <div class="drop-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="upload-row">
+            <div class="upload-col">
+              <p class="upload-col-label">Parte 1</p>
+              <div class="drop-zone" id="drop-zone" tabindex="0" role="region" aria-label="Área de upload">
+                <div class="drop-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <p class="drop-label">Arraste uma imagem ou PDF aqui</p>
+                <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
+                <button type="button" class="btn btn-outline" id="btn-select-file">Selecionar arquivo</button>
+                <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.pdf" hidden />
+              </div>
+              <p class="file-name" id="file-name"></p>
+              <figure class="file-preview" id="file-preview" hidden>
+                <img id="preview-img" src="" alt="Pré-visualização" />
+              </figure>
             </div>
-            <p class="drop-label">Arraste uma imagem ou PDF aqui</p>
-            <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
-            <button type="button" class="btn btn-outline" id="btn-select-file">Selecionar arquivo</button>
-            <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.pdf" hidden />
+
+            <div class="upload-col">
+              <p class="upload-col-label">Parte 2 <span class="upload-col-opcional">(opcional — se não coube tudo na parte 1)</span></p>
+              <div class="drop-zone" id="drop-zone-2" tabindex="0" role="region" aria-label="Área de upload — parte 2 (opcional)">
+                <div class="drop-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                </div>
+                <p class="drop-label">Arraste a imagem da parte 2 aqui</p>
+                <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
+                <button type="button" class="btn btn-outline" id="btn-select-file-2">Selecionar arquivo</button>
+                <input type="file" id="file-input-2" accept=".png,.jpg,.jpeg,.pdf" hidden />
+              </div>
+              <p class="file-name" id="file-name-2"></p>
+              <figure class="file-preview" id="file-preview-2" hidden>
+                <img id="preview-img-2" src="" alt="Pré-visualização parte 2" />
+              </figure>
+            </div>
           </div>
-          <p class="file-name" id="file-name"></p>
-          <figure class="file-preview" id="file-preview" hidden>
-            <img id="preview-img" src="" alt="Pré-visualização" />
-          </figure>
         </div>
       </div>
 

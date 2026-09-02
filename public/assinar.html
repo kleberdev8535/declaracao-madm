@@ -437,8 +437,8 @@
     <div id="camera-erro" hidden>
       <div class="camera-erro fade">
         <div style="font-size:2.5rem">📵</div>
-        <p>Câmera não disponível ou sem permissão.</p>
-        <p style="margin-top:.5rem;font-size:.8rem;color:var(--muted)">
+        <p id="camera-erro-msg">Câmera não disponível ou sem permissão.</p>
+        <p id="camera-erro-dica" style="margin-top:.5rem;font-size:.8rem;color:var(--muted)">
           Verifique se você permitiu o acesso à câmera nas configurações do navegador.
         </p>
       </div>
@@ -605,11 +605,29 @@
     if (stream) { stream.getTracks().forEach(function(t) { t.stop(); }); stream = null; }
   }
 
+  function mostrarErroCamera(msg, dica) {
+    document.getElementById('camera-ativa').hidden = true;
+    document.getElementById('camera-erro').hidden  = false;
+    document.getElementById('camera-erro-msg').textContent  = msg;
+    document.getElementById('camera-erro-dica').textContent = dica;
+    // Se sem câmera, permite enviar sem foto
+    fotoDataUrl = '';
+    document.getElementById('btn-acao').disabled = false;
+  }
+
   function iniciarCamera() {
     pararCamera();
     document.getElementById('camera-ativa').hidden = false;
     document.getElementById('foto-tirada').hidden  = true;
     document.getElementById('camera-erro').hidden  = true;
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      mostrarErroCamera(
+        'Este navegador não suporta acesso à câmera.',
+        'Isso pode acontecer em conexões sem HTTPS ou em navegadores/apps desatualizados. Tente abrir o link no Chrome ou Safari.'
+      );
+      return;
+    }
 
     navigator.mediaDevices.getUserMedia({
       video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 960 } },
@@ -620,12 +638,34 @@
       var video = document.getElementById('camera-video');
       video.srcObject = s;
     })
-    .catch(function() {
-      document.getElementById('camera-ativa').hidden = true;
-      document.getElementById('camera-erro').hidden  = false;
-      // Se sem câmera, permite enviar sem foto
-      fotoDataUrl = '';
-      document.getElementById('btn-acao').disabled = false;
+    .catch(function(err) {
+      var nome = err && err.name;
+      if (nome === 'NotAllowedError' || nome === 'PermissionDeniedError') {
+        mostrarErroCamera(
+          'Permissão da câmera negada.',
+          'Verifique se você permitiu o acesso à câmera nas configurações do navegador e tente novamente.'
+        );
+      } else if (nome === 'NotFoundError' || nome === 'DevicesNotFoundError') {
+        mostrarErroCamera(
+          'Nenhuma câmera foi encontrada neste dispositivo.',
+          'Você pode continuar sem tirar foto.'
+        );
+      } else if (nome === 'NotReadableError' || nome === 'TrackStartError') {
+        mostrarErroCamera(
+          'A câmera está sendo usada por outro aplicativo.',
+          'Feche outros apps ou abas que possam estar usando a câmera e tente novamente, ou continue sem foto.'
+        );
+      } else if (nome === 'OverconstrainedError' || nome === 'ConstraintNotSatisfiedError') {
+        mostrarErroCamera(
+          'Não foi possível trocar de câmera neste dispositivo.',
+          'Este dispositivo pode ter apenas uma câmera disponível. Você pode continuar sem foto.'
+        );
+      } else {
+        mostrarErroCamera(
+          'Câmera não disponível ou sem permissão.',
+          'Verifique se você permitiu o acesso à câmera nas configurações do navegador.'
+        );
+      }
     });
   }
 

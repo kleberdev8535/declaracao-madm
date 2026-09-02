@@ -274,7 +274,32 @@ body {
 
 .card-wide { grid-column: 1 / -1; }
 
-#card-upload { grid-column: 1 / -1; max-width: 600px; width: 100%; justify-self: center; }
+#card-upload { grid-column: 1 / -1; max-width: 920px; width: 100%; justify-self: center; }
+
+.upload-row {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.upload-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-col-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.upload-col-opcional {
+  font-weight: 400;
+  color: var(--text-2);
+}
+
+@media (max-width: 720px) {
+  .upload-row { flex-direction: column; }
+}
 
 .card-header {
   display: flex;

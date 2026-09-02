@@ -42,6 +42,9 @@
   var ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'application/pdf'];
   var MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
+  // Texto bruto extraído de cada parte (1 = obrigatória, 2 = opcional)
+  var rawTextParts = { 1: '', 2: '' };
+
   function validateFile(file) {
     if (!ACCEPTED_TYPES.includes(file.type)) {
       return { ok: false, reason: 'invalid-type' };
@@ -52,8 +55,8 @@
     return { ok: true };
   }
 
-  function showFileError(reason) {
-    var el = document.getElementById('file-name');
+  function showFileError(reason, suffix) {
+    var el = document.getElementById('file-name' + suffix);
     if (reason === 'invalid-type') {
       el.textContent = 'Formato inválido. Aceitos: PNG, JPG, JPEG e PDF.';
     } else if (reason === 'too-large') {
@@ -62,50 +65,52 @@
       el.textContent = 'Erro ao processar o arquivo.';
     }
     el.classList.add('error');
-    hidePreview();
+    hidePreview(suffix);
   }
 
-  function showFileName(name) {
-    var el = document.getElementById('file-name');
+  function showFileName(name, suffix) {
+    var el = document.getElementById('file-name' + suffix);
     el.textContent = 'Arquivo selecionado: ' + name;
     el.classList.remove('error');
   }
 
-  function showPreview(file) {
-    var preview = document.getElementById('file-preview');
-    var img = document.getElementById('preview-img');
+  function showPreview(file, suffix) {
+    var preview = document.getElementById('file-preview' + suffix);
+    var img = document.getElementById('preview-img' + suffix);
     if (file.type.startsWith('image/')) {
       var url = URL.createObjectURL(file);
       img.src = url;
       img.onload = function () { URL.revokeObjectURL(url); };
       preview.hidden = false;
     } else {
-      hidePreview();
+      hidePreview(suffix);
     }
   }
 
-  function hidePreview() {
-    var preview = document.getElementById('file-preview');
-    var img = document.getElementById('preview-img');
+  function hidePreview(suffix) {
+    var preview = document.getElementById('file-preview' + suffix);
+    var img = document.getElementById('preview-img' + suffix);
     preview.hidden = true;
     img.src = '';
   }
 
-  function handleFileSelected(file) {
+  function handleFileSelected(file, part) {
+    var suffix = part === 2 ? '-2' : '';
     var result = validateFile(file);
     if (!result.ok) {
-      showFileError(result.reason);
+      showFileError(result.reason, suffix);
       return;
     }
-    showFileName(file.name);
-    showPreview(file);
-    processFile(file);
+    showFileName(file.name, suffix);
+    showPreview(file, suffix);
+    processFile(file, part);
   }
 
-  function initUploader() {
-    var dropZone  = document.getElementById('drop-zone');
-    var btnSelect = document.getElementById('btn-select-file');
-    var fileInput = document.getElementById('file-input');
+  function initUploaderPart(part) {
+    var suffix    = part === 2 ? '-2' : '';
+    var dropZone  = document.getElementById('drop-zone' + suffix);
+    var btnSelect = document.getElementById('btn-select-file' + suffix);
+    var fileInput = document.getElementById('file-input' + suffix);
 
     // Botão abre o seletor de arquivo
     btnSelect.addEventListener('click', function () {
@@ -115,7 +120,7 @@
     // Seleção via input
     fileInput.addEventListener('change', function () {
       if (fileInput.files && fileInput.files[0]) {
-        handleFileSelected(fileInput.files[0]);
+        handleFileSelected(fileInput.files[0], part);
         fileInput.value = ''; // reset para permitir re-seleção do mesmo arquivo
       }
     });
@@ -135,7 +140,7 @@
       dropZone.classList.remove('drag-over');
       var files = e.dataTransfer && e.dataTransfer.files;
       if (files && files[0]) {
-        handleFileSelected(files[0]);
+        handleFileSelected(files[0], part);
       }
     });
 
@@ -146,6 +151,11 @@
         fileInput.click();
       }
     });
+  }
+
+  function initUploader() {
+    initUploaderPart(1);
+    initUploaderPart(2);
   }
 
   /* =========================================================
@@ -186,26 +196,30 @@
   /**
    * Processa um arquivo (imagem ou PDF) com OCR e preenche o formulário.
    * O arquivo não é guardado em variável global — é descartado após o uso.
+   * `part` indica se é a parte 1 (obrigatória) ou 2 (opcional, quando a minuta
+   * não coube em um único print) — os textos das duas partes são combinados
+   * antes da extração dos campos.
    */
-  async function processFile(file) {
+  async function processFile(file, part) {
+    var rotulo = part === 2 ? ' (parte 2)' : '';
     showStatusArea();
-    setStatus('Lendo imagem...');
+    setStatus('Lendo imagem' + rotulo + '...');
 
     try {
       var rawText = '';
 
       if (file.type === 'application/pdf') {
         // PDF: renderizar páginas e fazer OCR em cada canvas
-        setStatus('Convertendo PDF...');
+        setStatus('Convertendo PDF' + rotulo + '...');
         var canvases = await pdfToCanvases(file);
         var pageTexts = [];
 
         for (var i = 0; i < canvases.length; i++) {
-          setStatus('Lendo página ' + (i + 1) + ' de ' + canvases.length + '...');
+          setStatus('Lendo página ' + (i + 1) + ' de ' + canvases.length + rotulo + '...');
           var result = await Tesseract.recognize(canvases[i], 'por+eng', {
             logger: function (m) {
               if (m.status === 'recognizing text') {
-                setStatus('OCR página ' + (i + 1) + ': ' + Math.round(m.progress * 100) + '%');
+                setStatus('OCR página ' + (i + 1) + rotulo + ': ' + Math.round(m.progress * 100) + '%');
               }
             },
           });
@@ -218,22 +232,25 @@
         var ocrResult = await Tesseract.recognize(file, 'por+eng', {
           logger: function (m) {
             if (m.status === 'recognizing text') {
-              setStatus('Lendo imagem: ' + Math.round(m.progress * 100) + '%');
+              setStatus('Lendo imagem' + rotulo + ': ' + Math.round(m.progress * 100) + '%');
             }
           },
         });
         rawText = ocrResult.data.text;
       }
 
-      // Exibir texto bruto
-      document.getElementById('raw-text').value = rawText;
+      rawTextParts[part] = rawText;
 
-      // Extrair e preencher campos
-      extractAndFill(rawText);
+      // Combina o texto das duas partes (parte 2 é opcional) e exibe o texto bruto
+      var combinedText = [rawTextParts[1], rawTextParts[2]].filter(Boolean).join('\n\n');
+      document.getElementById('raw-text').value = combinedText;
+
+      // Extrair e preencher campos com o texto combinado
+      extractAndFill(combinedText);
 
     } catch (err) {
       console.error('Erro no OCR:', err);
-      setStatus('Erro ao processar o arquivo. Verifique se o arquivo não está corrompido.');
+      setStatus('Erro ao processar o arquivo' + rotulo + '. Verifique se o arquivo não está corrompido.');
     }
   }
 
