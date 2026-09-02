@@ -313,7 +313,8 @@
     { field: 'rua',           re: /^avenida\s+(.+)/i },
     { field: 'rua',           re: /^av\.?\s+(.+)/i },
     { field: 'rua',           re: /^logradouro\s+(.+)/i },
-    { field: 'rua',           re: /^endere[cç]o\s+(.+)/i },
+    // exclui "Endereço - Rua/Número/..." (rótulo composto do HubSpot, tratado no Passo 2)
+    { field: 'rua',           re: /^endere[cç]o\s+(?!-\s*\S)(.+)/i },
     { field: 'numero',        re: /^n[uú]mero\s+(.+)/i },
     { field: 'numero',        re: /^n[°º\.]\s*(.+)/i },
     { field: 'complemento',   re: /^complemento\s+(.+)/i },
@@ -323,6 +324,29 @@
     { field: 'uf',            re: /^uf\s+(.+)/i },
     { field: 'uf',            re: /^estado\s+([A-Z]{2})$/i },
   ];
+
+  // Rótulos que aparecem sozinhos numa linha, com o valor na linha seguinte
+  // (formato do CRM Hubspot: "Nome" \n "José", "Endereço - Rua" \n "Rua Tal", etc.)
+  var LABEL_ONLY_EXTRACTORS = [
+    { field: 'nome',          re: /^nome(?:\s+completo)?$/i },
+    { field: 'sobrenome',     re: /^sobrenome$/i },
+    { field: 'nacionalidade', re: /^nacionalidade$/i },
+    { field: 'estadoCivil',   re: /^estado\s*civil$/i },
+    { field: 'profissao',     re: /^profiss[aã]o(?:\s+atual)?$/i },
+    { field: 'rg',            re: /^(?:r\.?\s*g\.?|identidade|registro\s+geral)$/i },
+    { field: 'cpf',           re: /^cpf$/i },
+    { field: 'rua',           re: /^(?:endere[cç]o\s*-\s*)?(?:rua|avenida|av\.?|logradouro|endere[cç]o)$/i },
+    { field: 'numero',        re: /^(?:endere[cç]o\s*-\s*)?n[uú]mero$/i },
+    { field: 'complemento',   re: /^(?:endere[cç]o\s*-\s*)?complemento$/i },
+    { field: 'bairro',        re: /^(?:endere[cç]o\s*-\s*)?bairro$/i },
+    { field: 'cep',           re: /^(?:endere[cç]o\s*-\s*)?cep$/i },
+    { field: 'cidade',        re: /^cidade$/i },
+    { field: 'uf',            re: /^uf$/i },
+  ];
+
+  function isLabelOnlyLine(line) {
+    return LABEL_ONLY_EXTRACTORS.some(function (p) { return p.re.test(line); });
+  }
 
   var CPF_RE = /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[-\s]?\d{2}\b/;
   var CEP_RE = /\b\d{5}-?\d{3}\b/;
@@ -355,12 +379,12 @@
     var lines = text.split('\n');
 
     var result = {
-      nome: null, nacionalidade: null, estadoCivil: null, profissao: null,
+      nome: null, sobrenome: null, nacionalidade: null, estadoCivil: null, profissao: null,
       cpf: null, rg: null, rua: null, numero: null, complemento: null,
       bairro: null, cep: null, cidade: null, uf: null,
     };
 
-    // Passo 1: rótulo no início da linha
+    // Passo 1: rótulo e valor na mesma linha (formato antigo, "Rótulo valor")
     for (var i = 0; i < lines.length; i++) {
       var trimmed = lines[i].trim();
       if (!trimmed) continue;
@@ -376,7 +400,38 @@
       }
     }
 
-    // Passo 2: fallback regex
+    // Passo 2: rótulo sozinho na linha, valor na linha seguinte (formato Hubspot)
+    for (var a = 0; a < lines.length; a++) {
+      var labelLine = lines[a].trim().replace(/:$/, '').replace(/[^\wÀ-ÿ\s.\-]+$/g, '').trim();
+      if (!labelLine) continue;
+
+      for (var b = 0; b < LABEL_ONLY_EXTRACTORS.length; b++) {
+        if (!LABEL_ONLY_EXTRACTORS[b].re.test(labelLine)) continue;
+        var field = LABEL_ONLY_EXTRACTORS[b].field;
+        if (result[field]) break; // já preenchido pelo Passo 1
+
+        // Procura o valor na próxima linha não vazia
+        for (var c = a + 1; c < lines.length; c++) {
+          var candidate = lines[c].trim();
+          if (!candidate) continue;
+          // Se a linha seguinte já é outro rótulo, este campo ficou vazio no CRM
+          if (isLabelOnlyLine(candidate.replace(/:$/, '').trim())) break;
+          // Placeholders tipo "--" indicam campo vazio
+          if (/^-+$/.test(candidate)) break;
+          result[field] = candidate;
+          break;
+        }
+        break;
+      }
+    }
+
+    // Combina Nome + Sobrenome (campos separados no Hubspot) em um único "nome"
+    if (result.sobrenome) {
+      result.nome = (result.nome ? result.nome + ' ' : '') + result.sobrenome;
+    }
+    delete result.sobrenome;
+
+    // Passo 3: fallback regex
     if (!result.cpf) { var mc = text.match(CPF_RE); if (mc) result.cpf = mc[0].trim(); }
     if (!result.cep) { var mce = text.match(CEP_RE); if (mce) result.cep = mce[0].trim(); }
     if (!result.rg) {
