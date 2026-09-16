@@ -150,6 +150,24 @@ function gerarPdfBuffer(doc: Documento): Promise<Buffer> {
 
 // ── ROTAS ─────────────────────────────────────────────────────
 
+// TEMP: diagnostico de rede/egress do Render — remover depois de usar
+app.get('/api/_diag', async (_req, res) => {
+  const resultado: any = { supabaseUrl: SUPABASE_URL, supabaseKeyLen: SUPABASE_KEY.length };
+  try {
+    const r1 = await fetch('https://www.google.com', { method: 'HEAD' });
+    resultado.google = { ok: r1.ok, status: r1.status };
+  } catch (e: any) {
+    resultado.google = { erro: e.message, cause: e.cause ? String(e.cause) : null };
+  }
+  try {
+    const r2 = await fetch(SUPABASE_URL + '/rest/v1/', { headers: { apikey: SUPABASE_KEY } });
+    resultado.supabaseRest = { ok: r2.ok, status: r2.status };
+  } catch (e: any) {
+    resultado.supabaseRest = { erro: e.message, cause: e.cause ? String(e.cause) : null };
+  }
+  res.json(resultado);
+});
+
 // Lista todos os documentos
 app.get('/api/docs', async (_req, res) => {
   const { data, error } = await supabase
