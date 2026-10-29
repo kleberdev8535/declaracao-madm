@@ -228,16 +228,19 @@ app.post('/api/declaracao', async (req, res) => {
 
   if (!d.nome) return res.status(400).json({ erro: 'O campo "nome" é obrigatório.' });
 
+  // ID do cliente na HubSpot, devolvido ao Make quando o documento for assinado
+  const cliente_id = String(req.body?.cliente_id ?? '').trim();
+
   const token = crypto.randomUUID();
   const texto = montarTextoDeclaracao(d);
   const { error } = await supabase.from('documentos').insert({
-    token, texto, nome: d.nome, cpf: d.cpf, status: 'pendente',
+    token, texto, nome: d.nome, cpf: d.cpf, status: 'pendente', cliente_id,
   });
   if (error) return res.status(500).json({ erro: error.message });
 
   const host  = req.headers['x-forwarded-host'] || req.headers.host || `localhost:${PORT}`;
   const proto = req.headers['x-forwarded-proto'] || 'http';
-  res.json({ link: `${proto}://${host}/assinar/${token}`, token, texto });
+  res.json({ link: `${proto}://${host}/assinar/${token}`, token, cliente_id, texto });
 });
 
 // Retorna dados do documento
@@ -276,9 +279,10 @@ app.post('/api/doc/:token/concluir', async (req, res) => {
   const ip = req.ip || '';
 
   let pdf_url = '';
+  let pdfBuffer: Buffer | null = null;
   try {
     const docCompleto = { ...doc, assinatura, foto, assinado_em, ip };
-    const pdfBuffer = await gerarPdfBuffer(docCompleto);
+    pdfBuffer = await gerarPdfBuffer(docCompleto);
     const fileName  = `${doc.token}.pdf`;
     await supabase.storage.from('pdfs').upload(fileName, pdfBuffer, {
       contentType: 'application/pdf', upsert: true,
@@ -293,8 +297,35 @@ app.post('/api/doc/:token/concluir', async (req, res) => {
     assinatura, foto, assinado_em, ip, status: 'assinado', pdf_url,
   }).eq('token', req.params.token);
 
-  res.json({ ok: true, assinadoEm: assinado_em });
+  res.json({ ok: true, assinadoEm: assinado_em, assinado_em });
+
+  const host  = req.headers['x-forwarded-host'] || req.headers.host || `localhost:${PORT}`;
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  notificarMake({
+    token: doc.token, cliente_id: doc.cliente_id || '', nome: doc.nome, cpf: doc.cpf, assinado_em, ip, pdf_url,
+    link: `${proto}://${host}/assinar/${doc.token}`,
+  }, pdfBuffer);
 });
+
+// Avisa o Make que o cliente assinou, enviando o PDF completo como arquivo
+const MAKE_WEBHOOK_URL = process.env.MAKE_WEBHOOK_URL;
+
+async function notificarMake(dados: Record<string, string>, pdf: Buffer | null) {
+  if (!MAKE_WEBHOOK_URL) return;
+  try {
+    const form = new FormData();
+    for (const [k, v] of Object.entries(dados)) form.append(k, v ?? '');
+    form.append('status', 'assinado');
+    if (pdf) {
+      const nomeArquivo = `Declaracao_${(dados.nome || dados.token).replace(/[^\w]+/g, '_')}.pdf`;
+      form.append('arquivo', new Blob([new Uint8Array(pdf)],{ type: 'application/pdf' }), nomeArquivo);
+    }
+    const r = await fetch(MAKE_WEBHOOK_URL, { method: 'POST', body: form });
+    if (!r.ok) console.error('Webhook do Make respondeu', r.status, await r.text());
+  } catch (e) {
+    console.error('Erro ao notificar o Make:', e);
+  }
+}
 
 // Download do PDF assinado — redireciona para Supabase Storage
 app.get('/api/doc/:token/pdf', async (req, res) => {
