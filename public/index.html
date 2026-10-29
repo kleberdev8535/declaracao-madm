@@ -82,225 +82,332 @@
 
   <!-- ─── PÁGINA OCR ─── -->
   <main class="page active" id="page-ocr">
-    <div class="page-header">
-      <div>
-        <h1 class="page-title">Gerar Declaração</h1>
-        <p class="page-subtitle">Envie um print ou foto da minuta — os dados são extraídos automaticamente</p>
+    <div class="ocr-header">
+      <div class="ocr-header-main">
+        <div class="ocr-header-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div>
+          <h1 class="page-title">Gerar Declaração</h1>
+          <p class="page-subtitle">Envie um print ou foto da minuta — os dados são extraídos automaticamente por OCR.</p>
+        </div>
+      </div>
+
+      <div class="ocr-info-card">
+        <div class="ocr-info-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v2M12 19v2M5 5l1.5 1.5M17.5 17.5 19 19M3 12h2M19 12h2M5 19l1.5-1.5M17.5 6.5 19 5"/><circle cx="12" cy="12" r="4"/></svg>
+          Extração automática com OCR
+        </div>
+        <p class="ocr-info-text">Nosso sistema identifica e preenche os dados automaticamente. Sempre revise as informações antes de gerar a declaração.</p>
       </div>
     </div>
 
-    <div class="content-grid">
-
-      <!-- Card Upload -->
-      <div class="card" id="card-upload">
-        <div class="card-header">
-          <span class="card-step">01</span>
-          <h2 class="card-title">Enviar Documento</h2>
+    <!-- Barra de progresso -->
+    <div class="steps-bar">
+      <div class="step-item active">
+        <div class="step-circle">1</div>
+        <div>
+          <p class="step-item-title">Enviar documento</p>
+          <p class="step-item-sub">Upload da minuta ou foto</p>
         </div>
-        <div class="card-body">
-          <div class="upload-row">
-            <div class="upload-col">
-              <p class="upload-col-label">Parte 1</p>
-              <div class="drop-zone" id="drop-zone" tabindex="0" role="region" aria-label="Área de upload">
-                <div class="drop-icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                </div>
-                <p class="drop-label">Arraste uma imagem ou PDF aqui</p>
-                <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
-                <button type="button" class="btn btn-outline" id="btn-select-file">Selecionar arquivo</button>
-                <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.pdf" hidden />
-              </div>
-              <p class="file-name" id="file-name"></p>
-              <figure class="file-preview" id="file-preview" hidden>
-                <img id="preview-img" src="" alt="Pré-visualização" />
-              </figure>
-            </div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div>
+          <p class="step-item-title">Revisar dados</p>
+          <p class="step-item-sub">Confira e ajuste as informações</p>
+        </div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div>
+          <p class="step-item-title">Gerar declaração</p>
+          <p class="step-item-sub">Finalize e baixe o documento</p>
+        </div>
+      </div>
+    </div>
 
-            <div class="upload-col">
-              <p class="upload-col-label">Parte 2 <span class="upload-col-opcional">(opcional — se não coube tudo na parte 1)</span></p>
-              <div class="drop-zone" id="drop-zone-2" tabindex="0" role="region" aria-label="Área de upload — parte 2 (opcional)">
-                <div class="drop-icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                </div>
-                <p class="drop-label">Arraste a imagem da parte 2 aqui</p>
-                <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
-                <button type="button" class="btn btn-outline" id="btn-select-file-2">Selecionar arquivo</button>
-                <input type="file" id="file-input-2" accept=".png,.jpg,.jpeg,.pdf" hidden />
+    <!-- Seção 1: Enviar documento -->
+    <div class="card section-card" id="card-upload">
+      <div class="section-card-header">
+        <span class="section-badge">1</span>
+        <div>
+          <h2 class="section-title">Enviar documento</h2>
+          <p class="section-subtitle">Faça o upload da minuta ou imagem do documento</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="upload-row">
+          <div class="upload-col">
+            <p class="upload-col-label">Parte 1</p>
+            <div class="drop-zone" id="drop-zone" tabindex="0" role="region" aria-label="Área de upload">
+              <div class="drop-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </div>
-              <p class="file-name" id="file-name-2"></p>
-              <figure class="file-preview" id="file-preview-2" hidden>
-                <img id="preview-img-2" src="" alt="Pré-visualização parte 2" />
-              </figure>
+              <p class="drop-label">Arraste uma imagem ou PDF aqui</p>
+              <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-select-file">Selecionar arquivo</button>
+              <p class="drop-or">ou arraste e solte o arquivo aqui</p>
+              <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.pdf" hidden />
+            </div>
+            <p class="file-name" id="file-name"></p>
+            <figure class="file-preview" id="file-preview" hidden>
+              <img id="preview-img" src="" alt="Pré-visualização" />
+            </figure>
+          </div>
+
+          <div class="upload-col">
+            <p class="upload-col-label">Parte 2 <span class="upload-col-opcional">(opcional)</span></p>
+            <p class="upload-col-hint">Se não coube tudo na parte 1</p>
+            <div class="drop-zone" id="drop-zone-2" tabindex="0" role="region" aria-label="Área de upload — parte 2 (opcional)">
+              <div class="drop-icon">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <p class="drop-label">Arraste a imagem aqui</p>
+              <p class="drop-hint">PNG, JPG ou PDF · Máx. 10 MB</p>
+              <button type="button" class="btn btn-primary btn-sm" id="btn-select-file-2">Selecionar arquivo</button>
+              <p class="drop-or">ou arraste e solte o arquivo aqui</p>
+              <input type="file" id="file-input-2" accept=".png,.jpg,.jpeg,.pdf" hidden />
+            </div>
+            <p class="file-name" id="file-name-2"></p>
+            <figure class="file-preview" id="file-preview-2" hidden>
+              <img id="preview-img-2" src="" alt="Pré-visualização parte 2" />
+            </figure>
+          </div>
+
+          <div class="upload-col tips-col">
+            <div class="tips-card">
+              <p class="tips-card-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5c.6.55 1 1.35 1 2.2V16h6v-1.3c0-.85.4-1.65 1-2.2A6 6 0 0 0 12 2Z"/></svg>
+                Dicas para um melhor resultado
+              </p>
+              <ul class="tips-list">
+                <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Use imagens nítidas e bem iluminadas</li>
+                <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Prefira arquivos em PDF, JPG ou PNG</li>
+                <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Tamanho máximo de 10 MB por arquivo</li>
+                <li><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Confira se todo o texto está visível</li>
+              </ul>
+              <p class="tips-note">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Os dados serão extraídos automaticamente. Você poderá revisar e ajustar no próximo passo.
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Card Processamento -->
-      <div class="card" id="card-status" hidden>
-        <div class="card-header">
-          <span class="card-step">02</span>
-          <h2 class="card-title">Processamento OCR</h2>
+    <!-- Card Processamento -->
+    <div class="card section-card" id="card-status" hidden>
+      <div class="card-body">
+        <div class="ocr-status">
+          <div class="ocr-spinner" id="ocr-spinner"></div>
+          <p class="ocr-status-text" id="status-text" role="status" aria-live="polite">Processando...</p>
         </div>
-        <div class="card-body">
-          <div class="ocr-status">
-            <div class="ocr-spinner" id="ocr-spinner"></div>
-            <p class="ocr-status-text" id="status-text" role="status" aria-live="polite">Processando...</p>
-          </div>
-          <button type="button" class="btn btn-ghost btn-sm" id="toggle-raw" aria-expanded="false" aria-controls="raw-text-area">
-            Ver texto bruto extraído
-          </button>
-          <div id="raw-text-area" hidden>
-            <textarea id="raw-text" readonly rows="6" class="textarea-raw" aria-label="Texto bruto extraído pelo OCR"></textarea>
-          </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="toggle-raw" aria-expanded="false" aria-controls="raw-text-area">
+          Ver texto bruto extraído
+        </button>
+        <div id="raw-text-area" hidden>
+          <textarea id="raw-text" readonly rows="6" class="textarea-raw" aria-label="Texto bruto extraído pelo OCR"></textarea>
         </div>
       </div>
+    </div>
 
-      <!-- Card Formulário -->
-      <div class="card card-wide">
-        <div class="card-header">
-          <span class="card-step">03</span>
-          <h2 class="card-title">Dados Identificados</h2>
+    <!-- Seção 2: Dados identificados -->
+    <div class="card section-card">
+      <div class="section-card-header">
+        <span class="section-badge">2</span>
+        <div>
+          <h2 class="section-title">Dados identificados</h2>
+          <p class="section-subtitle">Confira e complete os dados extraídos do documento</p>
         </div>
-        <div class="card-body">
-          <form id="declaration-form" novalidate>
+        <span class="section-header-note">
+          <span class="dot dot--primary"></span>
+          Campos preenchidos automaticamente serão revisados por você.
+        </span>
+      </div>
+      <div class="card-body">
+        <form id="declaration-form" novalidate>
 
-            <!-- Nome — linha inteira -->
-            <div class="form-group" style="flex:unset">
-              <label class="form-label" for="field-nome">Nome completo</label>
+          <!-- Nome — linha inteira -->
+          <div class="form-group" style="flex:unset">
+            <label class="form-label" for="field-nome">Nome completo</label>
+            <div class="input-icon-wrap">
+              <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               <input class="form-input" type="text" id="field-nome" name="nome" placeholder="Nome completo do titular" />
             </div>
+          </div>
 
-            <!-- Nacionalidade | Estado Civil | Profissão -->
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="field-nacionalidade">Nacionalidade</label>
+          <!-- Nacionalidade | Estado Civil | Profissão -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-nacionalidade">Nacionalidade</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg>
                 <input class="form-input" type="text" id="field-nacionalidade" name="nacionalidade" placeholder="Ex: brasileiro(a)" />
               </div>
-              <div class="form-group">
-                <label class="form-label" for="field-estado-civil">Estado Civil</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-estado-civil">Estado Civil</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.6Z"/></svg>
                 <input class="form-input" type="text" id="field-estado-civil" name="estadoCivil" placeholder="Ex: solteiro(a)" />
               </div>
-              <div class="form-group">
-                <label class="form-label" for="field-profissao">Profissão</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-profissao">Profissão</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 <input class="form-input" type="text" id="field-profissao" name="profissao" placeholder="Ex: vendedor" />
               </div>
             </div>
+          </div>
 
-            <!-- RG | CPF -->
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="field-rg">RG</label>
+          <!-- RG | CPF -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-rg">RG</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="8.5" cy="11.5" r="2.2"/><line x1="14" y1="9" x2="19" y2="9"/><line x1="14" y1="13" x2="19" y2="13"/><line x1="5" y1="17" x2="12" y2="17"/></svg>
                 <input class="form-input" type="text" id="field-rg" name="rg" placeholder="Número do RG" />
               </div>
-              <div class="form-group">
-                <label class="form-label" for="field-cpf">CPF</label>
-                <input class="form-input" type="text" id="field-cpf" name="cpf" placeholder="000.000.000-00" aria-describedby="cpf-error" />
-                <span id="cpf-error" class="form-error" role="alert" aria-live="assertive" hidden>CPF inválido.</span>
-              </div>
-              <!-- coluna vazia para ocupar a 3ª posição igual ao layout -->
-              <div class="form-group" style="visibility:hidden;pointer-events:none"></div>
             </div>
+            <div class="form-group">
+              <label class="form-label" for="field-cpf">CPF</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="7" y1="15" x2="11" y2="15"/></svg>
+                <input class="form-input" type="text" id="field-cpf" name="cpf" placeholder="000.000.000-00" aria-describedby="cpf-error" />
+              </div>
+              <span id="cpf-error" class="form-error" role="alert" aria-live="assertive" hidden>CPF inválido.</span>
+            </div>
+            <!-- coluna vazia para ocupar a 3ª posição igual ao layout -->
+            <div class="form-group" style="visibility:hidden;pointer-events:none"></div>
+          </div>
 
-            <!-- Rua (larga) | Número (curto) -->
-            <div class="form-row">
-              <div class="form-group form-group--wide">
-                <label class="form-label" for="field-rua">Rua</label>
+          <!-- Rua (larga) | Número (curto) -->
+          <div class="form-row">
+            <div class="form-group form-group--wide">
+              <label class="form-label" for="field-rua">Rua</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 <input class="form-input" type="text" id="field-rua" name="rua" placeholder="Nome da rua" />
               </div>
-              <div class="form-group form-group--short">
-                <label class="form-label" for="field-numero">Número</label>
+            </div>
+            <div class="form-group form-group--short">
+              <label class="form-label" for="field-numero">Número</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="9" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="15" y2="20"/></svg>
                 <input class="form-input" type="text" id="field-numero" name="numero" placeholder="S/N" />
               </div>
             </div>
+          </div>
 
-            <!-- Complemento | Bairro -->
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="field-complemento">Complemento</label>
+          <!-- Complemento | Bairro -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-complemento">Complemento</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
                 <input class="form-input" type="text" id="field-complemento" name="complemento" placeholder="Ex: Q B L 16" />
               </div>
-              <div class="form-group">
-                <label class="form-label" for="field-bairro">Bairro</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="field-bairro">Bairro</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
                 <input class="form-input" type="text" id="field-bairro" name="bairro" placeholder="Bairro" />
               </div>
             </div>
+          </div>
 
-            <!-- CEP | Cidade (larga) | UF (curto) -->
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="field-cep">CEP</label>
+          <!-- CEP | Cidade (larga) | UF (curto) -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="field-cep">CEP</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 8h20"/></svg>
                 <input class="form-input" type="text" id="field-cep" name="cep" placeholder="00000-000" />
               </div>
-              <div class="form-group form-group--wide">
-                <label class="form-label" for="field-cidade">Cidade</label>
+            </div>
+            <div class="form-group form-group--wide">
+              <label class="form-label" for="field-cidade">Cidade</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M6 21V9l5-4 5 4v12M10 21v-5h4v5M9 12h.01M9 15h.01M15 12h.01M15 15h.01"/></svg>
                 <input class="form-input" type="text" id="field-cidade" name="cidade" placeholder="Cidade" />
               </div>
-              <div class="form-group form-group--short">
-                <label class="form-label" for="field-uf">UF</label>
+            </div>
+            <div class="form-group form-group--short">
+              <label class="form-label" for="field-uf">UF</label>
+              <div class="input-icon-wrap">
+                <svg class="input-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
                 <input class="form-input" type="text" id="field-uf" name="uf" placeholder="MS" maxlength="2" />
               </div>
             </div>
-
-            <div class="form-actions">
-              <button type="button" class="btn btn-primary btn-lg" id="btn-gerar">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                Gerar Declaração
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Card Declaração Gerada -->
-      <div class="card card-wide" id="declaration-area" hidden>
-        <div class="card-header">
-          <span class="card-step">04</span>
-          <h2 class="card-title">Declaração Gerada</h2>
-        </div>
-        <div class="card-body">
-          <textarea id="declaration-text" readonly rows="12" class="textarea-declaration" aria-label="Texto da declaração gerada"></textarea>
-
-          <div class="declaration-actions">
-            <button type="button" class="btn btn-ghost" id="btn-copy">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Copiar texto
-            </button>
-            <button type="button" class="btn btn-outline" id="btn-download-pdf">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Baixar PDF
-            </button>
-            <button type="button" class="btn btn-primary" id="btn-enviar-assinatura">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Enviar para Assinatura
-            </button>
           </div>
 
-          <!-- Área do link -->
-          <div class="link-area" id="link-area" hidden>
-            <div class="link-area-header">
-              <div class="link-status-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              </div>
-              <div>
-                <p class="link-area-title">Link de assinatura gerado</p>
-                <p class="link-area-sub">Envie para o cliente via WhatsApp ou e-mail</p>
-              </div>
-            </div>
-            <div class="link-input-row">
-              <input type="text" id="link-assinatura" readonly class="link-input" />
-              <button type="button" class="btn btn-outline btn-sm" id="btn-copy-link">Copiar</button>
-            </div>
-            <div class="link-polling" id="link-polling">
-              <div class="polling-dot"></div>
-              <p>Aguardando assinatura do cliente...</p>
-            </div>
-            <div id="link-status"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline btn-lg" id="btn-cancelar-declaracao">Cancelar</button>
+            <button type="button" class="btn btn-primary btn-lg" id="btn-gerar">
+              Gerar Declaração
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
           </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Seção 3: Declaração Gerada -->
+    <div class="card section-card" id="declaration-area" hidden>
+      <div class="section-card-header">
+        <span class="section-badge">3</span>
+        <div>
+          <h2 class="section-title">Declaração gerada</h2>
+          <p class="section-subtitle">Confira o texto, baixe o PDF ou envie para o cliente assinar</p>
         </div>
       </div>
+      <div class="card-body">
+        <textarea id="declaration-text" readonly rows="12" class="textarea-declaration" aria-label="Texto da declaração gerada"></textarea>
 
-    </div><!-- /content-grid -->
+        <div class="declaration-actions">
+          <button type="button" class="btn btn-ghost" id="btn-copy">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copiar texto
+          </button>
+          <button type="button" class="btn btn-outline" id="btn-download-pdf">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Baixar PDF
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-enviar-assinatura">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Enviar para Assinatura
+          </button>
+        </div>
+
+        <!-- Área do link -->
+        <div class="link-area" id="link-area" hidden>
+          <div class="link-area-header">
+            <div class="link-status-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <div>
+              <p class="link-area-title">Link de assinatura gerado</p>
+              <p class="link-area-sub">Envie para o cliente via WhatsApp ou e-mail</p>
+            </div>
+          </div>
+          <div class="link-input-row">
+            <input type="text" id="link-assinatura" readonly class="link-input" />
+            <button type="button" class="btn btn-outline btn-sm" id="btn-copy-link">Copiar</button>
+          </div>
+          <div class="link-polling" id="link-polling">
+            <div class="polling-dot"></div>
+            <p>Aguardando assinatura do cliente...</p>
+          </div>
+          <div id="link-status"></div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- ─── PÁGINA ASSINATURAS ─── -->
@@ -311,17 +418,17 @@
         <p class="page-subtitle">Acompanhe todos os documentos enviados para assinatura</p>
       </div>
       <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:.35rem;">
-          <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">De</label>
-          <input type="date" id="filtro-data-de" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
-          <label style="font-size:.75rem;color:var(--text-muted);white-space:nowrap;">Até</label>
-          <input type="date" id="filtro-data-ate" onchange="aplicarFiltroData()" style="font-size:.75rem;padding:.25rem .4rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);">
-          <button onclick="limparFiltroData()" title="Limpar datas" style="font-size:.75rem;padding:.25rem .5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text-muted);cursor:pointer;">✕</button>
-        </div>
-        <button class="btn btn-danger" onclick="apagarTodosDocumentos()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          Apagar tudo
-        </button>
+        <details class="more-menu">
+          <summary class="more-menu-btn" title="Mais opções">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </summary>
+          <div class="more-menu-list">
+            <button class="more-menu-item danger" onclick="this.closest('details').open=false;apagarTodosDocumentos()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              Apagar todos os documentos
+            </button>
+          </div>
+        </details>
         <button class="btn btn-primary" onclick="trocarPagina('ocr')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Nova declaração
@@ -330,30 +437,95 @@
     </div>
 
     <!-- Métricas -->
-    <div class="metrics-row" id="metrics-row">
-      <div class="metric-card">
-        <p class="metric-label">Total</p>
-        <p class="metric-value" id="metric-total">—</p>
+    <div class="kpi-row" id="metrics-row">
+
+      <!-- Total de documentos -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <p class="kpi-label">Total de documentos</p>
+        </div>
+        <div class="kpi-card-mid">
+          <p class="kpi-value" id="metric-total">—</p>
+          <span class="kpi-trend" id="metric-total-trend" hidden></span>
+        </div>
+        <p class="kpi-sub">Em relação ao mês anterior</p>
       </div>
-      <div class="metric-card metric-card--green">
-        <p class="metric-label">Assinados</p>
-        <p class="metric-value" id="metric-assinados">—</p>
+
+      <!-- Assinados -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <p class="kpi-label">Assinados</p>
+        </div>
+        <div class="kpi-card-mid">
+          <p class="kpi-value" id="metric-assinados">—</p>
+          <div class="kpi-ring">
+            <svg viewBox="0 0 36 36" class="kpi-ring-svg">
+              <path class="kpi-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path class="kpi-ring-fg kpi-ring-fg--strong" id="ring-assinados-fg" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="kpi-ring-text" id="metric-assinados-pct">—</span>
+          </div>
+        </div>
+        <p class="kpi-sub">Documentos concluídos</p>
       </div>
-      <div class="metric-card metric-card--yellow">
-        <p class="metric-label">Pendentes</p>
-        <p class="metric-value" id="metric-pendentes">—</p>
+
+      <!-- Pendentes -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <p class="kpi-label">Pendentes</p>
+        </div>
+        <div class="kpi-card-mid">
+          <p class="kpi-value" id="metric-pendentes">—</p>
+          <div class="kpi-ring">
+            <svg viewBox="0 0 36 36" class="kpi-ring-svg">
+              <path class="kpi-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path class="kpi-ring-fg kpi-ring-fg--light" id="ring-pendentes-fg" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <span class="kpi-ring-text" id="metric-pendentes-pct">—</span>
+          </div>
+        </div>
+        <p class="kpi-sub">Aguardando assinatura</p>
+      </div>
+
+      <!-- Signatários únicos -->
+      <div class="kpi-card">
+        <div class="kpi-card-top">
+          <div class="kpi-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <p class="kpi-label">Signatários únicos</p>
+        </div>
+        <div class="kpi-card-mid">
+          <p class="kpi-value" id="metric-signatarios">—</p>
+        </div>
+        <p class="kpi-sub">Pessoas que assinaram</p>
       </div>
     </div>
 
     <!-- Tabela -->
     <div class="table-card">
       <div class="table-toolbar">
-        <p class="table-count" id="table-count">—</p>
+        <div class="filter-tabs">
+          <button class="filter-tab active" data-filter="todos" onclick="filtrarDocs(this,'todos')">Todos <span class="filter-tab-count" id="count-todos">0</span></button>
+          <button class="filter-tab" data-filter="pendente" onclick="filtrarDocs(this,'pendente')">Pendentes <span class="filter-tab-count" id="count-pendente">0</span></button>
+          <button class="filter-tab" data-filter="assinado" onclick="filtrarDocs(this,'assinado')">Assinados <span class="filter-tab-count" id="count-assinado">0</span></button>
+        </div>
         <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-          <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="todos" onclick="filtrarDocs(this,'todos')">Todos</button>
-            <button class="filter-tab" data-filter="pendente" onclick="filtrarDocs(this,'pendente')">Pendentes</button>
-            <button class="filter-tab" data-filter="assinado" onclick="filtrarDocs(this,'assinado')">Assinados</button>
+          <div class="date-filter">
+            <svg class="date-filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" id="filtro-data-de" onchange="aplicarFiltroData()" title="Data inicial" />
+            <span class="date-filter-sep">→</span>
+            <input type="date" id="filtro-data-ate" onchange="aplicarFiltroData()" title="Data final" />
+            <button class="date-filter-clear" onclick="limparFiltroData()" title="Limpar datas">✕</button>
           </div>
           <button class="btn-refresh-inline" id="btn-refresh-inline" onclick="carregarDocumentos()" title="Atualizar">
             <svg id="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
@@ -385,6 +557,11 @@
           </tbody>
         </table>
       </div>
+
+      <div class="table-footer">
+        <p class="table-count" id="table-count">—</p>
+        <div class="pagination" id="pagination"></div>
+      </div>
     </div>
 
   </main>
@@ -409,6 +586,8 @@
 // ── Navegação entre páginas ──────────────────────────────────
 var _todosDocumentos = [];
 var _filtroAtual = 'todos';
+var _paginaAtual = 1;
+var PAGE_SIZE = 10;
 
 function trocarPagina(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -429,6 +608,7 @@ function trocarPagina(id) {
 
 // ── Busca em tempo real ──────────────────────────────────────
 document.getElementById('search-docs').addEventListener('input', function () {
+  _paginaAtual = 1;
   renderTabela(_todosDocumentos, _filtroAtual, this.value.trim().toLowerCase());
 });
 
@@ -444,6 +624,7 @@ async function carregarDocumentos() {
     var r    = await fetch('https://declaracao-madm.onrender.com/api/docs');
     var docs = await r.json();
     _todosDocumentos = docs;
+    _paginaAtual = 1;
     atualizarMetricas(docs);
     renderTabela(docs, _filtroAtual, document.getElementById('search-docs').value.trim().toLowerCase());
     // badge de pendentes no nav
@@ -459,24 +640,68 @@ async function carregarDocumentos() {
   }
 }
 
+// Variação real de volume: documentos criados neste mês vs. mês anterior
+// (não é estimativa — conta os registros por mês a partir de criado_em)
+function calcularTendenciaMensal(docs) {
+  var agora = new Date();
+  var chaveAtual = agora.getFullYear() + '-' + agora.getMonth();
+  var refAnterior = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+  var chaveAnterior = refAnterior.getFullYear() + '-' + refAnterior.getMonth();
+
+  var contAtual = 0, contAnterior = 0;
+  docs.forEach(function (d) {
+    if (!d.criado_em) return;
+    var dt = new Date(d.criado_em);
+    var chave = dt.getFullYear() + '-' + dt.getMonth();
+    if (chave === chaveAtual) contAtual++;
+    else if (chave === chaveAnterior) contAnterior++;
+  });
+
+  if (contAnterior === 0) return null;
+  return Math.round(((contAtual - contAnterior) / contAnterior) * 100);
+}
+
 function atualizarMetricas(docs) {
-  var total     = docs.length;
-  var assinados = docs.filter(d => d.status === 'assinado').length;
-  var pendentes = docs.filter(d => d.status === 'pendente').length;
-  document.getElementById('metric-total').textContent     = total;
-  document.getElementById('metric-assinados').textContent = assinados;
-  document.getElementById('metric-pendentes').textContent = pendentes;
+  var total       = docs.length;
+  var assinados   = docs.filter(d => d.status === 'assinado').length;
+  var pendentes   = docs.filter(d => d.status === 'pendente').length;
+  var signatarios = new Set(docs.map(d => d.cpf).filter(Boolean)).size;
+
+  document.getElementById('metric-total').textContent       = total;
+  document.getElementById('metric-assinados').textContent   = assinados;
+  document.getElementById('metric-pendentes').textContent   = pendentes;
+  document.getElementById('metric-signatarios').textContent = signatarios;
+
+  var pctAssinados = total ? Math.round((assinados / total) * 100) : 0;
+  var pctPendentes = total ? Math.round((pendentes / total) * 100) : 0;
+
+  document.getElementById('metric-assinados-pct').textContent = pctAssinados + '%';
+  document.getElementById('metric-pendentes-pct').textContent = pctPendentes + '%';
+  document.getElementById('ring-assinados-fg').setAttribute('stroke-dasharray', pctAssinados + ', 100');
+  document.getElementById('ring-pendentes-fg').setAttribute('stroke-dasharray', pctPendentes + ', 100');
+
+  var trend = calcularTendenciaMensal(docs);
+  var trendEl = document.getElementById('metric-total-trend');
+  if (trend === null) {
+    trendEl.hidden = true;
+  } else {
+    trendEl.hidden = false;
+    trendEl.classList.toggle('is-down', trend < 0);
+    trendEl.textContent = (trend >= 0 ? '▲ +' : '▼ ') + trend + '%';
+  }
 }
 
 function filtrarDocs(btn, filtro) {
   document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _filtroAtual = filtro;
+  _paginaAtual = 1;
   var busca = document.getElementById('search-docs').value.trim().toLowerCase();
   renderTabela(_todosDocumentos, filtro, busca);
 }
 
 function aplicarFiltroData() {
+  _paginaAtual = 1;
   var busca = document.getElementById('search-docs').value.trim().toLowerCase();
   renderTabela(_todosDocumentos, _filtroAtual, busca);
 }
@@ -487,20 +712,70 @@ function limparFiltroData() {
   aplicarFiltroData();
 }
 
+function irParaPagina(n) {
+  _paginaAtual = n;
+  var busca = document.getElementById('search-docs').value.trim().toLowerCase();
+  renderTabela(_todosDocumentos, _filtroAtual, busca);
+  document.querySelector('.table-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderPaginacao(totalItens, paginaAtual, totalPaginas) {
+  var el = document.getElementById('pagination');
+  if (totalPaginas <= 1) { el.innerHTML = ''; return; }
+
+  var paginas = [];
+  for (var i = 1; i <= totalPaginas; i++) {
+    if (i === 1 || i === totalPaginas || Math.abs(i - paginaAtual) <= 1) paginas.push(i);
+    else if (paginas[paginas.length - 1] !== '...') paginas.push('...');
+  }
+
+  var html = '<button class="page-btn" ' + (paginaAtual === 1 ? 'disabled' : '') +
+    ' onclick="irParaPagina(' + (paginaAtual - 1) + ')" aria-label="Página anterior">‹</button>';
+
+  paginas.forEach(function (p) {
+    if (p === '...') { html += '<span class="page-btn-ellipsis">…</span>'; return; }
+    html += '<button class="page-btn' + (p === paginaAtual ? ' active' : '') +
+      '" onclick="irParaPagina(' + p + ')">' + p + '</button>';
+  });
+
+  html += '<button class="page-btn" ' + (paginaAtual === totalPaginas ? 'disabled' : '') +
+    ' onclick="irParaPagina(' + (paginaAtual + 1) + ')" aria-label="Próxima página">›</button>';
+
+  el.innerHTML = html;
+}
+
 function renderTabela(docs, filtro, busca) {
   var dataDe  = document.getElementById('filtro-data-de').value;
   var dataAte = document.getElementById('filtro-data-ate').value;
-  var lista = docs.filter(function(d) {
-    var passaFiltro = filtro === 'todos' || d.status === filtro;
+
+  function passaBuscaEData(d) {
     var passaBusca  = !busca || d.nome.toLowerCase().includes(busca) || (d.cpf && d.cpf.includes(busca));
     var dataDoc = d.criado_em ? (function(dt){ var d = new Date(dt); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })(d.criado_em) : '';
     var passaDataDe  = !dataDe  || dataDoc >= dataDe;
     var passaDataAte = !dataAte || dataDoc <= dataAte;
-    return passaFiltro && passaBusca && passaDataDe && passaDataAte;
+    return passaBusca && passaDataDe && passaDataAte;
+  }
+
+  // Contagem por status para os chips de filtro (respeitando busca/data, ignorando o status)
+  var visiveis = docs.filter(passaBuscaEData);
+  document.getElementById('count-todos').textContent     = visiveis.length;
+  document.getElementById('count-pendente').textContent  = visiveis.filter(d => d.status === 'pendente').length;
+  document.getElementById('count-assinado').textContent  = visiveis.filter(d => d.status === 'assinado').length;
+
+  var lista = visiveis.filter(function(d) {
+    return filtro === 'todos' || d.status === filtro;
   });
 
-  document.getElementById('table-count').textContent =
-    lista.length + ' documento' + (lista.length !== 1 ? 's' : '');
+  var totalPaginas = Math.max(1, Math.ceil(lista.length / PAGE_SIZE));
+  if (_paginaAtual > totalPaginas) _paginaAtual = totalPaginas;
+  var inicio = (_paginaAtual - 1) * PAGE_SIZE;
+  var pagina = lista.slice(inicio, inicio + PAGE_SIZE);
+
+  document.getElementById('table-count').textContent = lista.length === 0
+    ? 'Nenhum documento'
+    : 'Mostrando ' + (inicio + 1) + '–' + Math.min(inicio + PAGE_SIZE, lista.length) + ' de ' + lista.length + ' documento' + (lista.length !== 1 ? 's' : '');
+
+  renderPaginacao(lista.length, _paginaAtual, totalPaginas);
 
   if (lista.length === 0) {
     document.getElementById('docs-tbody').innerHTML =
@@ -508,7 +783,7 @@ function renderTabela(docs, filtro, busca) {
     return;
   }
 
-  document.getElementById('docs-tbody').innerHTML = lista.map(function(d) {
+  document.getElementById('docs-tbody').innerHTML = pagina.map(function(d) {
     var dataStr = new Date(d.criado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
     var badge   = d.status === 'assinado'
       ? '<span class="status-badge status-badge--green">Assinado</span>'

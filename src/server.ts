@@ -15,7 +15,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-key');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -180,6 +180,64 @@ app.post('/api/assinar', async (req, res) => {
   const host  = req.headers['x-forwarded-host'] || req.headers.host || `localhost:${PORT}`;
   const proto = req.headers['x-forwarded-proto'] || 'http';
   res.json({ link: `${proto}://${host}/assinar/${token}`, token });
+});
+
+// Monta o texto da declaração (mesmo modelo do painel em public/app.js)
+function montarTextoDeclaracao(d: Record<string, string>): string {
+  const dateStr = new Date().toLocaleDateString('pt-BR', {
+    day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo',
+  });
+
+  const endParts: string[] = [];
+  if (d.rua)         endParts.push(d.rua);
+  if (d.numero)      endParts.push('N°: ' + d.numero);
+  if (d.complemento) endParts.push(d.complemento);
+  if (d.bairro)      endParts.push('Bairro ' + d.bairro);
+  if (d.cidade)      endParts.push('Cidade ' + d.cidade);
+  if (d.uf)          endParts.push('UF: ' + d.uf);
+  if (d.cep)         endParts.push('CEP ' + d.cep);
+
+  const localData = d.cidade && d.uf
+    ? d.cidade + ' - ' + d.uf + ', ' + dateStr + '.'
+    : '_____________________________, ' + dateStr + '.';
+
+  return 'Eu, ' + d.nome + ', ' +
+    (d.nacionalidade || 'brasileiro(a)') + ', ' +
+    (d.estado_civil || 'solteiro(a)') + ', ' +
+    (d.profissao || '_______________') + ', ' +
+    'devidamente inscrito(a) no CPF sob o N°: ' + (d.cpf || '___.___.___-__') + ', ' +
+    'portador(a) da cédula de identidade N° ' + (d.rg || '__________') + ', ' +
+    'DECLARO para os devidos fins, segundo o Art. 299 do Código Penal – Omitir, em documento público ou particular, declaração que dele devia constar, ou nele inserir ou fazer inserir declaração falsa ou diversa da que devia ser escrita, com o fim de prejudicar direito, criar obrigação ou alterar a verdade sobre fato juridicamente relevante, ' +
+    'ser residente e domiciliado(a) na ' + endParts.join(', ') + '.\n' +
+    '\n' +
+    localData;
+}
+
+// Cria a declaração automaticamente a partir dos dados enviados pelo Make
+app.post('/api/declaracao', async (req, res) => {
+  const chave = process.env.MAKE_API_KEY;
+  if (chave && req.headers['x-api-key'] !== chave) {
+    return res.status(401).json({ erro: 'Chave de API inválida.' });
+  }
+
+  const campos = ['nome', 'nacionalidade', 'estado_civil', 'profissao', 'rg', 'cpf',
+                  'rua', 'numero', 'complemento', 'bairro', 'cep', 'cidade', 'uf'];
+  const d: Record<string, string> = {};
+  for (const c of campos) d[c] = String(req.body?.[c] ?? '').trim();
+  d.uf = d.uf.toUpperCase();
+
+  if (!d.nome) return res.status(400).json({ erro: 'O campo "nome" é obrigatório.' });
+
+  const token = crypto.randomUUID();
+  const texto = montarTextoDeclaracao(d);
+  const { error } = await supabase.from('documentos').insert({
+    token, texto, nome: d.nome, cpf: d.cpf, status: 'pendente',
+  });
+  if (error) return res.status(500).json({ erro: error.message });
+
+  const host  = req.headers['x-forwarded-host'] || req.headers.host || `localhost:${PORT}`;
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+  res.json({ link: `${proto}://${host}/assinar/${token}`, token, texto });
 });
 
 // Retorna dados do documento

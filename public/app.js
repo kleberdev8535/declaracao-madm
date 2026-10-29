@@ -616,6 +616,30 @@
   function initDeclarationGenerator() {
     document.getElementById('btn-gerar').addEventListener('click', generateDeclaration);
 
+    // Cancelar: limpa o formulário e o upload para começar de novo
+    var btnCancelar = document.getElementById('btn-cancelar-declaracao');
+    if (btnCancelar) {
+      btnCancelar.addEventListener('click', function () {
+        if (!confirm('Cancelar e limpar todos os dados preenchidos?')) return;
+        document.getElementById('declaration-form').reset();
+        document.querySelectorAll('#declaration-form .form-input').forEach(function (el) {
+          el.classList.remove('auto-filled', 'manual-filled');
+        });
+        Object.keys(formState).forEach(function (key) {
+          formState[key].value = '';
+          formState[key].source = 'none';
+        });
+        rawTextParts[1] = '';
+        rawTextParts[2] = '';
+        document.getElementById('file-name').textContent = '';
+        document.getElementById('file-name-2').textContent = '';
+        hidePreview('');
+        hidePreview('-2');
+        document.getElementById('card-status').hidden = true;
+        document.getElementById('declaration-area').hidden = true;
+      });
+    }
+
     // Copiar para clipboard
     document.getElementById('btn-copy').addEventListener('click', function () {
       var text = document.getElementById('declaration-text').value;
@@ -732,7 +756,7 @@
               document.getElementById('link-polling').hidden = true;
               var assinadoEm = new Date(doc.assinado_em).toLocaleString('pt-BR');
               document.getElementById('link-status').innerHTML =
-                '<span style="color:var(--green);font-weight:700">✓ Assinado em ' + assinadoEm + '</span>'
+                '<span style="color:var(--green);font-weight:700"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:-1px"><polyline points="20 6 9 17 4 12"/></svg> Assinado em ' + assinadoEm + '</span>'
                 + ' &nbsp;—&nbsp; '
                 + '<a href="https://declaracao-madm.onrender.com/api/doc/' + data.token + '/pdf" target="_blank">⬇️ Baixar PDF assinado</a>';
             }
@@ -797,3 +821,19 @@
   }
 
 })();
+
+// Fecha o menu 'mais opções' ao clicar fora
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('details.more-menu[open]').forEach((d) => { if (!d.contains(e.target)) d.open = false; });
+});
+
+
+// Abre o calendário ao clicar em qualquer parte do campo de data
+document.addEventListener('click', (e) => {
+  const input = e.target.closest('.date-filter input[type="date"]');
+  if (input && input.showPicker) { e.preventDefault(); try { input.showPicker(); } catch (_) {} }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target.matches && e.target.matches('.date-filter input[type="date"]') && e.key !== 'Tab') e.preventDefault();
+});
+
